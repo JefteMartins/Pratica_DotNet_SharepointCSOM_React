@@ -49,16 +49,19 @@ public class SharePointService : ISharePointService
         var listName = _config["SharePoint:ListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
+        var statuses = new[] { "Pending", "In Progress", "Done", "Cancelled" };
+        var random = new Random();
+
         // Seeding in batches of 100 to avoid long-running single ExecuteQuery and handle timeouts
         int batchSize = 100;
         for (int i = 0; i < count; i++)
         {
             var itemCreateInfo = new ListItemCreationInformation();
             var newItem = list.AddItem(itemCreateInfo);
-            newItem["Title"] = $"Task {i + 1} - Generated at {DateTime.Now}";
+            newItem["Title"] = $"Task {i + 1} - Generated at {DateTime.Now:dd/MM/yyyy HH:mm}";
             newItem["Description"] = $"This is a test task for the performance lab. Item index: {i}";
-            newItem["Status"] = i % 2 == 0 ? "Pending" : "Completed";
-            newItem["DueDate"] = DateTime.Now.AddDays(i % 30);
+            newItem["Status"] = statuses[random.Next(statuses.Length/)];
+            newItem["DueDate"] = DateTime.Now.AddDays(random.Next(-10, 30));
             newItem.Update();
 
             if ((i + 1) % batchSize == 0 || (i + 1) == count)

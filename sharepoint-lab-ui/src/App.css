@@ -153,7 +153,9 @@ button:hover:not(:disabled) { filter: brightness(0.9); }
 }
 
 .status-pill.pending { background: #fff4ce; color: #797775; }
-.status-pill.completed { background: #dff6dd; color: #107c10; }
+.status-pill.in.progress { background: #deecf9; color: #0078d4; }
+.status-pill.done { background: #dff6dd; color: #107c10; }
+.status-pill.cancelled { background: #fde7e9; color: #a80000; }
 
 .loader {
   text-align: center;
