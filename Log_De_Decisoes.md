@@ -12,6 +12,21 @@
 - [10:50] **Ação:** Instalação do Axios e criação do serviço base de API no frontend.
   - **Por que:** Centralizar a comunicação com o backend. **Boa prática:** O uso de instâncias do Axios (`axios.create`) permite gerenciar headers, tokens e URLs base em um único lugar, facilitando a manutenção e testes.
 
-- [11:00] **Ação:** Refatoração do `SharePointContextFactory.cs` para usar autenticação baseada em certificado (X.509).
-  - **Por que:** Alinhamento com as práticas recomendadas de segurança do Azure/SharePoint Online, substituindo o Client Secret por certificados `.pfx`. **Boa prática:** O uso de certificados é mais seguro contra vazamentos, pois exige a posse do arquivo físico e, opcionalmente, uma senha para descriptografar a chave privada.
+- [11:30] **Ação:** Implementação de DTOs usando `record` e inclusão de métricas de performance no backend.
+  - **Por que:** Para o Lab de Performance, o tempo de execução no servidor (`ElapsedMs`) é o KPI principal. **Boa prática:** Usar `record` em C# 10+ para DTOs garante imutabilidade e sintaxe concisa para transferência de dados.
+
+- [11:45] **Ação:** Implementação de `RenderListDataAsStream` como alternativa ao `GetItems` (CSOM).
+  - **Por que:** Demonstrar conhecimento de APIs modernas do SharePoint Online. **Boa prática:** `RenderListDataAsStream` é otimizado para listas grandes, retornando JSON bruto e ignorando limites de threshold de forma mais eficiente que queries CAML tradicionais.
+
+- [12:15] **Ação:** Adoção do Fluent UI v9 no Frontend React.
+  - **Por que:** Alinhamento visual com o ecossistema Microsoft 365. **Boa prática:** Usar bibliotecas de componentes oficiais (como Fluent UI) garante consistência de UX em aplicações corporativas e demonstra senioridade no stack da Microsoft.
+
+- [12:30] **Ação:** Implementação de paginação baseada em tokens (`ListItemCollectionPosition`).
+  - **Por que:** No SharePoint, paginação estilo SQL (`Skip/Take`) não é performática para grandes volumes. **Boa prática:** O uso de tokens de posição ("marcador de livro") permite que o servidor salte direto para o ponto de continuação sem reprocessar itens anteriores, essencial para listas com mais de 5.000 itens.
+
+- [13:15] **Ação:** Implementação do Writing Lab com comparação entre Sequential e Batched.
+  - **Por que:** Demonstrar como reduzir round-trips de rede. **Boa prática:** O batching no CSOM (vários `Update()` antes de um único `ExecuteQuery`) é a técnica mais eficaz para inserções massivas, reduzindo a latência acumulada e o risco de throttling.
+
+- [13:30] **Ação:** Refinamento do esquema de escrita e tratamento de erro de esquema.
+  - **Por que:** Identificado que campos inexistentes ou de tipos incompatíveis (ex: Status como Choice) causam falhas silenciosas no CSOM. **Boa prática:** Sempre validar o Internal Name dos campos e envolver operações de escrita em blocos try-catch específicos para `ServerException` para diagnósticos precisos.
 

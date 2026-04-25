@@ -1,144 +1,118 @@
-import { useState, useEffect } from 'react'
-import './App.css'
-import { sharePointApi } from './services/api'
-
-interface Task {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  dueDate: string;
-}
+import { useState } from 'react';
+import { 
+  FluentProvider, 
+  webLightTheme, 
+  TabList, 
+  Tab, 
+  Title1, 
+  Text,
+  LargeTitle,
+  tokens,
+  MessageBar,
+  MessageBarTitle,
+  MessageBarBody,
+  Button,
+  Spinner
+} from '@fluentui/react-components';
+import { Database24Regular, ReadingList24Regular, ArrowSync24Regular, Edit24Regular } from '@fluentui/react-icons';
+import { ReadingLab } from './components/ReadingLab';
+import { WritingLab } from './components/WritingLab';
+import { sharePointApi } from './services/api';
 
 function App() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(false)
-  const [seeding, setSeeding] = useState(false)
-  const [message, setMessage] = useState('')
-
-  const fetchTasks = async () => {
-    setLoading(true)
-    try {
-      const response = await sharePointApi.getTasks()
-      console.log('Dados recebidos do SharePoint:', response.data)
-      
-      setTasks(response.data)
-      setMessage(`Carregadas ${response.data.length} tarefas.`)
-    } catch (error: any) {
-      console.error('Erro na requisição:', error)
-      setMessage(`Erro: ${error.response?.data || 'Falha ao conectar na API'}`)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [selectedTab, setSelectedTab] = useState<'reading' | 'writing' | 'data'>('reading');
+  const [seeding, setSeeding] = useState(false);
+  const [status, setStatus] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   const handleSeed = async (count: number) => {
-    setSeeding(true)
-    setMessage(`Gerando ${count} tarefas... aguarde...`)
+    setSeeding(true);
+    setStatus({ message: `Gerando ${count} tarefas no SharePoint...`, type: 'info' });
     try {
-      await sharePointApi.seedData(count)
-      setMessage(`Sucesso! ${count} tarefas geradas.`)
-      fetchTasks()
+      await sharePointApi.seedData(count);
+      setStatus({ message: `Sucesso! ${count} tarefas foram criadas.`, type: 'success' });
     } catch (error) {
-      console.error(error)
-      setMessage('Erro ao gerar dados.')
+      console.error(error);
+      setStatus({ message: 'Falha ao injetar dados.', type: 'error' });
     } finally {
-      setSeeding(false)
+      setSeeding(false);
     }
-  }
-
-  useEffect(() => {
-    fetchTasks()
-  }, [])
+  };
 
   return (
-    <div className="lab-container">
-      <header className="lab-header">
-        <h1>SharePoint <span className="highlight">Performance Lab</span></h1>
-        <div className="status-bar">
-          <span className={`badge ${loading ? 'loading' : 'ready'}`}>
-            {loading ? 'Sincronizando...' : 'Online'}
-          </span>
-          <p>{message}</p>
-        </div>
-      </header>
-
-      <main className="lab-content">
-        <section className="control-panel">
-          <h2>Controles de Carga</h2>
-          <p>Use os botões abaixo para injetar dados no SharePoint e testar a performance do CSOM.</p>
-          <div className="button-group">
-            <button 
-              disabled={seeding || loading} 
-              onClick={() => handleSeed(10)}
-              className="btn-seed"
-            >
-              Seed 10 Itens
-            </button>
-            <button 
-              disabled={seeding || loading} 
-              onClick={() => handleSeed(100)}
-              className="btn-seed primary"
-            >
-              Seed 100 Itens
-            </button>
-            <button 
-              disabled={seeding || loading} 
-              onClick={() => handleSeed(1000)}
-              className="btn-seed danger"
-            >
-              Seed 1000 Itens
-            </button>
-            <button onClick={fetchTasks} className="btn-refresh">
-              Atualizar Lista
-            </button>
-          </div>
-        </section>
-
-        <section className="data-section">
-          <div className="section-header">
-            <h2>Itens no SharePoint</h2>
-            <span className="count-tag">{tasks.length} itens</span>
-          </div>
+    <FluentProvider theme={webLightTheme}>
+      <div style={{ 
+        minHeight: '100vh', 
+        backgroundColor: tokens.colorNeutralBackground3, // Fundo cinza claro global
+        padding: '40px 20px' 
+      }}>
+        <div style={{ 
+          maxWidth: '1200px', 
+          margin: '0 auto', 
+          backgroundColor: tokens.colorNeutralBackground1, // Fundo branco para o conteúdo
+          padding: '40px',
+          borderRadius: tokens.borderRadiusXLarge,
+          boxShadow: tokens.shadow16,
+          minHeight: '80vh'
+        }}>
           
-          <div className="table-wrapper">
-            {loading && tasks.length === 0 ? (
-              <div className="loader">Carregando dados do SharePoint...</div>
-            ) : (
-              <table className="task-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Título</th>
-                    <th>Status</th>
-                    <th>Vencimento</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tasks.length > 0 ? tasks.map(task => (
-                    <tr key={task.id}>
-                      <td>{task.id}</td>
-                      <td className="task-title">{task.title}</td>
-                      <td>
-                        <span className={`status-pill ${task.status.toLowerCase()}`}>
-                          {task.status}
-                        </span>
-                      </td>
-                      <td>{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '-'}</td>
-                    </tr>
-                  )) : (
-                    <tr>
-                      <td colSpan={4} className="empty-state">Nenhum item encontrado. Use o Seed para começar.</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </section>
-      </main>
-    </div>
-  )
+          <header style={{ marginBottom: '40px' }}>
+            <LargeTitle block style={{ color: tokens.colorBrandForeground1 }}>
+              SharePoint CSOM <span style={{ fontWeight: tokens.fontWeightRegular }}>Performance Lab</span>
+            </LargeTitle>
+            <Text size={400} style={{ color: tokens.colorNeutralForeground3 }}>
+              Ambiente de testes para técnicas avançadas de leitura e escrita em listas de grande volume.
+            </Text>
+          </header>
+
+        {status && (
+          <MessageBar intent={status.type} style={{ marginBottom: '20px' }}>
+            <MessageBarBody>
+              <MessageBarTitle>{status.message}</MessageBarTitle>
+            </MessageBarBody>
+          </MessageBar>
+        )}
+
+        <TabList 
+          selectedValue={selectedTab} 
+          onTabSelect={(_, data) => setSelectedTab(data.value as any)}
+          style={{ marginBottom: '30px' }}
+        >
+          <Tab value="reading" icon={<ReadingList24Regular />}>The Reading Lab</Tab>
+          <Tab value="writing" icon={<Edit24Regular />}>The Writing Lab</Tab>
+          <Tab value="data" icon={<Database24Regular />}>Data Management (Seed)</Tab>
+        </TabList>
+
+        <main>
+          {selectedTab === 'reading' && <ReadingLab />}
+          
+          {selectedTab === 'writing' && <WritingLab />}
+          
+          {selectedTab === 'data' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <Title1>Gerenciamento de Dados</Title1>
+              <Text>Para testar o Threshold e a performance de paginação, você precisa de uma massa de dados significativa.</Text>
+              
+              <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                <Button disabled={seeding} onClick={() => handleSeed(100)}>Seed 100 Itens</Button>
+                <Button disabled={seeding} onClick={() => handleSeed(1000)}>Seed 1.000 Itens</Button>
+                <Button 
+                  disabled={seeding} 
+                  appearance="primary" 
+                  icon={seeding ? <Spinner size="tiny" /> : <ArrowSync24Regular />} 
+                  onClick={() => handleSeed(5000)}
+                >
+                  Seed 5.000 Itens (Threshold)
+                </Button>
+              </div>
+              
+              {seeding && <Spinner label="Gerando dados em lotes de 100 para evitar timeout..." />}
+            </div>
+          )}
+        </main>
+      </div>
+     </div>
+    </FluentProvider>
+  );
 }
 
-export default App
+export default App;

@@ -2,6 +2,7 @@
 
 ## 🎯 Objective
 Create a full-stack application (React + .NET Web API) designed specifically to practice and demonstrate advanced SharePoint CSOM techniques for handling large data volumes and ensuring resilience. This "Lab" will serve as a sandbox for an upcoming technical interview on Tuesday.
+DON'T IMPLEMENT ANYTHING WITHOUT CONSENT
 
 ## 🏗️ Architecture: The "Comparison Engine"
 
@@ -41,15 +42,15 @@ Focuses on making the application fault-tolerant against SharePoint Online throt
 ## 🗓️ Roadmap to Tuesday
 
 ### Phase 1: Foundation (Today)
-- [ ] Initialize React frontend using Vite.
-- [ ] Setup basic API communication between React and the existing .NET backend.
-- [ ] Refactor `SharePointService.cs` to use interfaces for easier swapping of implementations.
-- [ ] Create the "Seed Data" endpoint to generate 5,000+ items in a test SharePoint list.
+- [x] Initialize React frontend using Vite.
+- [x] Setup basic API communication between React and the existing .NET backend.
+- [x] Refactor `SharePointService.cs` to use interfaces for easier swapping of implementations.
+- [x] Create the "Seed Data" endpoint to generate 5,000+ items in a test SharePoint list.
 
 ### Phase 2: The Reading Lab (Tomorrow)
-- [ ] Implement `ListItemCollectionPosition` logic.
-- [ ] Implement `RenderListDataAsStream` logic.
-- [ ] Build the UI comparison view for pagination.
+- [x] Implement `ListItemCollectionPosition` logic.
+- [x] Implement `RenderListDataAsStream` logic.
+- [x] Build the UI comparison view for pagination.
 
 ### Phase 3: The Writing Lab (Sunday)
 - [ ] Implement naive item creation.
