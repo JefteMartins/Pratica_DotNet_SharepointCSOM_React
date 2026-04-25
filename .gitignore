@@ -1,0 +1,23 @@
+# .NET
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Certificates (CRITICAL)
+*.cer
+*.pfx
+
+# Secrets
+appsettings.json
+appsettings.Development.json
+
+# Node / React
+node_modules/
+dist/
+.eslintcache
+
+# Logs
+*.log
