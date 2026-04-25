@@ -30,3 +30,9 @@
 - [13:30] **Ação:** Refinamento do esquema de escrita e tratamento de erro de esquema.
   - **Por que:** Identificado que campos inexistentes ou de tipos incompatíveis (ex: Status como Choice) causam falhas silenciosas no CSOM. **Boa prática:** Sempre validar o Internal Name dos campos e envolver operações de escrita em blocos try-catch específicos para `ServerException` para diagnósticos precisos.
 
+- [14:00] **Ação:** Implementação de resiliência com Polly (v8) e simulador de Throttling.
+  - **Por que:** SharePoint Online é agressivo com Throttling (429). **Boa prática:** O uso de Exponential Backoff com Jitter protege a aplicação e o servidor, permitindo que falhas transitórias sejam resolvidas sem intervenção do usuário.
+
+- [14:30] **Ação:** Construção dinâmica de CAML Queries para busca customizada.
+  - **Por que:** Filtragem no servidor é mandatória para performance em listas grandes. **Boa prática:** Ao construir CAML dinamicamente, é necessário respeitar a estrutura aninhada de `<And>` do SharePoint (que aceita apenas 2 argumentos por nó), garantindo que a query seja válida e performática.
+

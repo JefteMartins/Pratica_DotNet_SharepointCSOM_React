@@ -15,18 +15,38 @@ import {
   TableBody,
   TableCell,
   Text,
-  tokens
+  tokens,
+  makeStyles
 } from '@fluentui/react-components';
 import { Timer24Regular, ArrowRight24Regular, Flash24Regular } from '@fluentui/react-icons';
 import { sharePointApi } from '../services/api';
+import { TaskEditModal } from './TaskEditModal';
+
+const useStyles = makeStyles({
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gap: '20px',
+    [`@media (min-width: 900px)`]: {
+      gridTemplateColumns: '1fr 1fr',
+    },
+  },
+  card: {
+    width: '100%',
+    overflowX: 'auto'
+  }
+});
 
 interface Task {
   id: number;
   title: string;
   status: string;
+  description?: string;
+  dueDate?: string;
 }
 
 export const ReadingLab: React.FC = () => {
+  const styles = useStyles();
   // Estados para o Lab Clássico
   const [classicItems, setClassicItems] = useState<Task[]>([]);
   const [classicTime, setClassicTime] = useState<number | null>(null);
@@ -38,27 +58,28 @@ export const ReadingLab: React.FC = () => {
   const [streamTime, setStreamTime] = useState<number | null>(null);
   const [isStreamLoading, setIsStreamLoading] = useState(false);
 
+  // Estados para o Modal
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Função para buscar dados via CSOM Clássico
   const fetchClassic = async (isNext = false) => {
     setIsClassicLoading(true);
     try {
-      // Passamos o nextPos se estivermos indo para a "próxima página"
       const pos = isNext ? nextPos || undefined : undefined;
       const response = await sharePointApi.getPaged(10, pos);
-      
       const { items, nextPosition, elapsedMs } = response.data;
       
       setClassicItems(items);
       setNextPos(nextPosition);
       setClassicTime(elapsedMs);
     } catch (error) {
-      console.error("Erro ao buscar dados clássicos", error);
+      console.error(error);
     } finally {
       setIsClassicLoading(false);
     }
   };
 
-  // Função para buscar dados via Stream API
   const fetchStream = async () => {
     setIsStreamLoading(true);
     try {
@@ -67,111 +88,152 @@ export const ReadingLab: React.FC = () => {
       setStreamItems(items);
       setStreamTime(elapsedMs);
     } catch (error) {
-      console.error("Erro ao buscar dados via stream", error);
+      console.error(error);
     } finally {
       setIsStreamLoading(false);
     }
   };
 
-  return (
-    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <Title2>Reading Lab: Large Data Volumes</Title2>
-      <Text>Compare a eficiência entre a paginação clássica do CSOM e a API moderna de Stream.</Text>
+  const handleRowClick = (task: Task) => {
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  };
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+  const handleModalClose = (updated: boolean) => {
+    setIsModalOpen(false);
+    if (updated) {
+      if (classicItems.length > 0) fetchClassic(false);
+      if (streamItems.length > 0) fetchStream();
+    }
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div>
+        <Title2>The Reading Lab: Large Data Volumes</Title2>
+        <Text block>Explore diferentes técnicas para ler dados do SharePoint, focando em performance e contorno do limite de 5.000 itens.</Text>
+      </div>
+
+      <div className={styles.grid}>
         
-        {/* Lado Esquerdo: Classic Paging */}
-        <Card>
+        {/* Lado Esquerdo: Clássico Paged */}
+        <Card className={styles.card}>
           <CardHeader 
-            header={<Subtitle1>Classic Paging (CSOM)</Subtitle1>}
-            description="Usa ListItemCollectionPosition para navegar entre páginas."
+            header={<Subtitle1>A: ListItemCollectionPosition</Subtitle1>}
+            description="Paginação clássica baseada em tokens de posição."
           />
-          <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-            <Button appearance="primary" icon={<Timer24Regular />} onClick={() => fetchClassic(false)} disabled={isClassicLoading}>
-              Primeira Página
+          <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+            <Button appearance="primary" onClick={() => fetchClassic(false)} disabled={isClassicLoading}>
+              Carregar Início
             </Button>
-            <Button icon={<ArrowRight24Regular />} onClick={() => fetchClassic(true)} disabled={isClassicLoading || !nextPos}>
-              Próxima Página
+            <Button 
+              icon={<ArrowRight24Regular />} 
+              disabled={!nextPos || isClassicLoading} 
+              onClick={() => fetchClassic(true)}
+            >
+              Próxima
             </Button>
           </div>
 
-          {classicTime !== null && (
-            <Badge appearance="filled" color="informative" icon={<Timer24Regular />} style={{ marginBottom: '10px' }}>
-              Tempo no Servidor: {classicTime}ms
+          {classicTime && (
+            <Badge appearance="filled" color="informative" icon={<Timer24Regular />}>
+              Tempo: {classicTime}ms
             </Badge>
           )}
 
-          {isClassicLoading ? <Spinner label="Lendo do SharePoint..." /> : (
-            <Table size="extra-small">
-              <TableHeader>
-                <TableRow>
-                  <TableHeaderCell>ID</TableHeaderCell>
-                  <TableHeaderCell>Título</TableHeaderCell>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {classicItems.map(item => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.id}</TableCell>
-                    <TableCell>{item.title}</TableCell>
+          <Divider style={{ margin: '15px 0' }} />
+
+          {isClassicLoading ? <Spinner label="Consultando via CSOM..." /> : (
+            <div style={{ overflowX: 'auto' }}>
+              <Table size="extra-small">
+                <TableHeader>
+                  <TableRow>
+                    <TableHeaderCell>ID</TableHeaderCell>
+                    <TableHeaderCell>Título</TableHeaderCell>
+                    <TableHeaderCell>Status</TableHeaderCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {classicItems.map(item => (
+                    <TableRow 
+                      key={item.id} 
+                      onClick={() => handleRowClick(item)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.title}</TableCell>
+                      <TableCell>
+                        <Badge appearance="outline" color={item.status === 'Done' ? 'success' : 'informative'}>
+                          {item.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </Card>
 
-        {/* Lado Direito: Stream API */}
-        <Card>
+        {/* Lado Direito: Modern Stream */}
+        <Card className={styles.card}>
           <CardHeader 
-            header={<Subtitle1>RenderListDataAsStream</Subtitle1>}
-            description="A API moderna otimizada para listas grandes."
+            header={<Subtitle1>B: RenderListDataAsStream</Subtitle1>}
+            description="API moderna e performática."
           />
           <div style={{ marginBottom: '10px' }}>
-            <Button 
-              appearance="primary" 
-              icon={<Flash24Regular />} 
-              onClick={fetchStream} 
-              disabled={isStreamLoading} 
-              style={{ backgroundColor: '#107c10', color: 'white' }} // Verde "Office/SharePoint" oficial
-            >
-              Executar Leitura Stream
+            <Button appearance="primary" icon={<Flash24Regular />} onClick={fetchStream} disabled={isStreamLoading} style={{ backgroundColor: tokens.colorPaletteGreenBackground3 }}>
+              Executar Stream
             </Button>
           </div>
 
-          {streamTime !== null && (
-            <Badge appearance="filled" color="success" icon={<Flash24Regular />} style={{ marginBottom: '10px' }}>
-              Tempo no Servidor: {streamTime}ms
+          {streamTime && (
+            <Badge appearance="filled" color="success" icon={<Timer24Regular />}>
+              Tempo: {streamTime}ms
             </Badge>
           )}
 
-          {isStreamLoading ? <Spinner label="Processando Stream..." /> : (
-            <Table size="extra-small">
-              <TableHeader>
-                <TableRow>
-                  <TableHeaderCell>ID</TableHeaderCell>
-                  <TableHeaderCell>Título</TableHeaderCell>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {streamItems.map(item => (
-                  <TableRow key={item.id}>
-                    <TableCell>{item.id}</TableCell>
-                    <TableCell>{item.title}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+          <Divider style={{ margin: '15px 0' }} />
 
-          <div style={{ marginTop: '20px', padding: '15px', backgroundColor: tokens.colorNeutralBackground2, borderRadius: '4px' }}>
-            <Text italic>
-              Dica: O RenderListDataAsStream evita a sobrecarga de objetos CSOM no servidor.
-            </Text>
-          </div>
+          {isStreamLoading ? <Spinner label="Consultando via Stream API..." /> : (
+            <div style={{ overflowX: 'auto' }}>
+              <Table size="extra-small">
+                <TableHeader>
+                  <TableRow>
+                    <TableHeaderCell>ID</TableHeaderCell>
+                    <TableHeaderCell>Título</TableHeaderCell>
+                    <TableHeaderCell>Status</TableHeaderCell>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {streamItems.map(item => (
+                    <TableRow 
+                      key={item.id}
+                      onClick={() => handleRowClick(item)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <TableCell>{item.id}</TableCell>
+                      <TableCell>{item.title}</TableCell>
+                      <TableCell>
+                        <Badge appearance="outline" color={item.status === 'Done' ? 'success' : 'informative'}>
+                          {item.status}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
         </Card>
 
       </div>
+      
+      <TaskEditModal 
+        isOpen={isModalOpen} 
+        task={selectedTask} 
+        onClose={handleModalClose} 
+      />
     </div>
   );
 };

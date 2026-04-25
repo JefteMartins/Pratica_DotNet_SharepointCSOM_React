@@ -10,12 +10,25 @@ import {
   Text,
   tokens,
   Input,
-  Label
+  Label,
+  makeStyles
 } from '@fluentui/react-components';
 import { Timer24Regular, Flash24Regular, Warning24Regular, CheckmarkCircle24Regular } from '@fluentui/react-icons';
 import { sharePointApi } from '../services/api';
 
+const useStyles = makeStyles({
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gap: '20px',
+    [`@media (min-width: 900px)`]: {
+      gridTemplateColumns: '1fr 1fr',
+    },
+  }
+});
+
 export const WritingLab: React.FC = () => {
+  const styles = useStyles();
   const [itemCount, setItemCount] = useState<number>(10);
   const [sequentialResult, setSequentialResult] = useState<{ time: number, avg: number } | null>(null);
   const [batchedResult, setBatchedResult] = useState<{ time: number, avg: number } | null>(null);
@@ -59,9 +72,11 @@ export const WritingLab: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <Title2>Writing Lab: Batching & Optimization</Title2>
-      <Text>Compare o impacto de realizar várias chamadas de rede (round-trips) contra o agrupamento de operações em um único lote.</Text>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div>
+        <Title2>Writing Lab: Batching & Optimization</Title2>
+        <Text block>Compare o impacto de realizar várias chamadas de rede contra o agrupamento de operações em um único lote.</Text>
+      </div>
 
       <Card style={{ maxWidth: '400px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
@@ -72,19 +87,16 @@ export const WritingLab: React.FC = () => {
             value={itemCount.toString()} 
             onChange={(e, data) => setItemCount(parseInt(data.value) || 0)} 
           />
-          <Text size={200} italic color="neutralTertiary">
-            Recomendado: 10 a 50 itens para notar a diferença sem travar o navegador.
-          </Text>
         </div>
       </Card>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className={styles.grid}>
         
         {/* Lado Esquerdo: Sequential */}
         <Card>
           <CardHeader 
             header={<Subtitle1>Naive Loop (One-by-One)</Subtitle1>}
-            description="Executa context.ExecuteQuery() para cada item adicionado."
+            description="Executa ExecuteQuery() para cada item."
           />
           <div style={{ marginBottom: '10px' }}>
             <Button 
@@ -109,20 +121,14 @@ export const WritingLab: React.FC = () => {
             </div>
           )}
 
-          {isLoading && currentMode === 'Sequential' && <Spinner label={`Criando ${itemCount} itens sequencialmente...`} />}
-          
-          <div style={{ marginTop: '20px', padding: '15px', backgroundColor: tokens.colorNeutralBackground2, borderRadius: '4px' }}>
-            <Text size={200}>
-              <strong>Problema:</strong> Cada item gera um round-trip de rede completo (Request/Response). A latência da rede mata a performance.
-            </Text>
-          </div>
+          {isLoading && currentMode === 'Sequential' && <Spinner label="Criando itens..." />}
         </Card>
 
         {/* Lado Direito: Batched */}
         <Card>
           <CardHeader 
             header={<Subtitle1>CSOM Batching</Subtitle1>}
-            description="Acumula as atualizações e executa uma única query para o lote."
+            description="Agrupa operações em uma única query."
           />
           <div style={{ marginBottom: '10px' }}>
             <Button 
@@ -147,20 +153,14 @@ export const WritingLab: React.FC = () => {
             </div>
           )}
 
-          {isLoading && currentMode === 'Batched' && <Spinner label={`Criando ${itemCount} itens em lote...`} />}
-
-          <div style={{ marginTop: '20px', padding: '15px', backgroundColor: tokens.colorNeutralBackground2, borderRadius: '4px' }}>
-            <Text size={200}>
-              <strong>Vantagem:</strong> O SharePoint recebe uma lista de instruções de uma vez. O custo da latência de rede é pago apenas uma vez.
-            </Text>
-          </div>
+          {isLoading && currentMode === 'Batched' && <Spinner label="Criando lote..." />}
         </Card>
 
       </div>
 
       {sequentialResult && batchedResult && (
         <Card appearance="subtle" style={{ backgroundColor: tokens.colorBrandBackground2 }}>
-          <Text weight="bold" size={500}>
+          <Text weight="bold">
             Resultado: A operação Batched foi {Math.round(sequentialResult.time / batchedResult.time)}x mais rápida!
           </Text>
         </Card>

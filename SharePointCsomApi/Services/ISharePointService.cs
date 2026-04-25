@@ -2,39 +2,29 @@ namespace SharePointCsomApi.Services;
 
 public record PagedResult(List<object> Items, string? NextPosition, long ElapsedMs);
 public record StreamResult(List<object> Items, long ElapsedMs);
-
 public record WritingResult(int Count, long ElapsedMs, string Mode);
+public record ResilienceResult(bool Success, int Retries, long ElapsedMs, string Message);
+public record SearchFilters(string? Title, string? Status, DateTime? MinDate, DateTime? MaxDate);
+public record DeletionResult(int Count, long ElapsedMs, string Mode);
+public record TaskUpdateModel(int Id, string Title, string? Status, string? Description, DateTime? DueDate);
 
 public interface ISharePointService
 {
-    /// <summary>
-    /// Recupera tarefas da lista de forma básica (CSOM padrão).
-    /// </summary>
     Task<List<object>> GetTasksAsync();
-
-    /// <summary>
-    /// Endpoint para popular a lista com dados de teste para o Lab.
-    /// </summary>
-    /// <param name="count">Quantidade de itens a gerar.</param>
     Task SeedDataAsync(int count);
-
-    /// <summary>
-    /// Recupera tarefas usando paginação clássica do CSOM (ListItemCollectionPosition).
-    /// </summary>
     Task<PagedResult> GetTasksPagedAsync(int pageSize, string? position);
-
-    /// <summary>
-    /// Recupera tarefas usando a API moderna RenderListDataAsStream.
-    /// </summary>
     Task<StreamResult> GetTasksStreamAsync(int pageSize);
-
-    /// <summary>
-    /// Cria itens um por um, executando uma query por item (Modo Ineficiente).
-    /// </summary>
     Task<WritingResult> CreateItemsSequentialAsync(int count);
-
-    /// <summary>
-    /// Cria itens em blocos, reduzindo round-trips (Modo Eficiente).
-    /// </summary>
     Task<WritingResult> CreateItemsBatchedAsync(int count, int batchSize = 50);
+    void SetStressMode(bool enabled);
+    Task<ResilienceResult> CreateItemWithResilienceAsync(string title);
+    Task<List<object>> SearchTasksAsync(SearchFilters filters);
+    Task<DeletionResult> DeleteItemsSequentialAsync(int count);
+    Task<DeletionResult> DeleteItemsBatchedAsync(int count, int batchSize = 50);
+    Task<DeletionResult> DeleteTasksByFilterAsync(SearchFilters filters);
+    
+    /// <summary>
+    /// Atualiza as informações de uma tarefa existente.
+    /// </summary>
+    Task<bool> UpdateTaskAsync(TaskUpdateModel task);
 }
