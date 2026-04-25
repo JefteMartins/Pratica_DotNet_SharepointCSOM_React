@@ -1,42 +1,25 @@
 using Microsoft.SharePoint.Client;
 using PnP.Framework;
-using System.Security.Cryptography.X509Certificates;
 
 namespace SharePointCsomApi.Services;
 
-public class SharePointService
+public class SharePointService : ISharePointService
 {
+    private readonly ISharePointContextFactory _contextFactory;
     private readonly IConfiguration _config;
 
-    public SharePointService(IConfiguration config)
+    public SharePointService(ISharePointContextFactory contextFactory, IConfiguration config)
     {
+        _contextFactory = contextFactory;
         _config = config;
     }
 
-    private ClientContext GetContext()
+    public async Task<List<object>> GetTasksAsync()
     {
-        var siteUrl = _config["SharePoint:SiteUrl"];
-        var clientId = _config["SharePoint:ClientId"];
-        var tenantId = _config["SharePoint:TenantId"];
-        var certPath = _config["SharePoint:CertificatePath"];
-        var certPassword = _config["SharePoint:CertificatePassword"];
+        using var context = await _contextFactory.CreateContextAsync();
 
-        var certificate = new X509Certificate2(certPath, certPassword);
-
-        var authManager = new AuthenticationManager(
-            clientId,
-            certificate,
-            tenantId
-        );
-
-        return authManager.GetContext(siteUrl);
-    }
-
-    public List<object> GetTasks()
-    {
-        using var context = GetContext();
-
-        var list = context.Web.Lists.GetByTitle("Tasks");
+        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var list = context.Web.Lists.GetByTitle(listName);
 
         var items = list.GetItems(CamlQuery.CreateAllItemsQuery());
 
@@ -44,17 +27,44 @@ public class SharePointService
             item => item.Id,
             item => item["Title"],
             item => item["Description"],
-            item => item["Status"]
+            item => item["Status"],
+            item => item["DueDate"]
         ));
+        
+        await context.ExecuteQueryRetryAsync();
 
-        context.ExecuteQuery();
-
-        return items.ToList().Select(i => new
+        return items.AsEnumerable().Select(i => new
         {
             Id = i.Id,
-            Title = i["Title"] != null ? i["Title"].ToString() : null,
-            Description = i["Description"] != null ? i["Description"].ToString() : null,
-            Status = i["Status"] != null ? i["Status"].ToString() : null
+            Title = i["Title"]?.ToString() ?? string.Empty,
+            Description = i["Description"]?.ToString() ?? string.Empty,
+            Status = i["Status"]?.ToString() ?? string.Empty,
+            DueDate = i["DueDate"]?.ToString() ?? string.Empty
         }).Cast<object>().ToList();
+    }
+
+    public async Task SeedDataAsync(int count)
+    {
+        using var context = await _contextFactory.CreateContextAsync();
+        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var list = context.Web.Lists.GetByTitle(listName);
+
+        // Seeding in batches of 100 to avoid long-running single ExecuteQuery and handle timeouts
+        int batchSize = 100;
+        for (int i = 0; i < count; i++)
+        {
+            var itemCreateInfo = new ListItemCreationInformation();
+            var newItem = list.AddItem(itemCreateInfo);
+            newItem["Title"] = $"Task {i + 1} - Generated at {DateTime.Now}";
+            newItem["Description"] = $"This is a test task for the performance lab. Item index: {i}";
+            newItem["Status"] = i % 2 == 0 ? "Pending" : "Completed";
+            newItem["DueDate"] = DateTime.Now.AddDays(i % 30);
+            newItem.Update();
+
+            if ((i + 1) % batchSize == 0 || (i + 1) == count)
+            {
+                await context.ExecuteQueryRetryAsync();
+            }
+        }
     }
 }
