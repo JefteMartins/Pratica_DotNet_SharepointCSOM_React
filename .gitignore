@@ -1,23 +1,32 @@
 # .NET
-[Bb]in/
-[Oo]bj/
+bin/
+obj/
+[Log]
+[log]
 *.user
+*.suo
 *.userosscache
-*.sln.docstates
+*.sln.docuser
 .vs/
-
-# Certificates (CRITICAL)
-*.cer
-*.pfx
-
-# Secrets
-appsettings.json
-appsettings.Development.json
 
 # Node / React
 node_modules/
 dist/
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 .eslintcache
+.stylelintcache
 
-# Logs
-*.log
+# OS
+Thumbs.db
+Desktop.ini
+
+# Project Specific
+*.pfx
+!appsettings.Example.json
