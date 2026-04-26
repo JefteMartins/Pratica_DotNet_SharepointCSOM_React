@@ -70,11 +70,26 @@ As listas são criadas automaticamente via `SharePointProvisioningService`.
 
 ---
 
-## 🛡️ Estratégia de Resiliência
+## 🛡️ Estratégia de Resiliência (Deep Dive)
 
-O sistema utiliza uma abordagem de **defesa em camadas**:
+O sistema implementa o padrão **Resilience in Depth**, combinando duas camadas complementares para garantir estabilidade mesmo sob alta carga ou instabilidade do SharePoint Online.
 
-1. **Camada de Retentativa (PnP Framework):** O método `ExecuteQueryRetryAsync` gerencia retentativas automáticas para erros transientes de rede e Throttling (429/503) de forma granular por requisição.
-2. **Camada de Interrupção (Polly - Circuit Breaker):** Implementado no `SharePointService`, o disjuntor monitora a saúde geral da conexão. Se a taxa de falhas atingir 50% em 30 segundos, o disjuntor "abre", impedindo novas chamadas por 30 segundos. Isso protege o sistema de loops de espera infinitos quando o serviço está indisponível.
+### 1. Camada de Retentativa (PnP Framework - Otimista)
+Utilizamos o método `ExecuteQueryRetryAsync` como nossa primeira linha de defesa.
+- **Funcionamento:** Age de forma granular em cada requisição individual.
+- **Estratégia:** Se o SharePoint retornar um erro transiente (como interrupção de rede ou HTTP 429/503), o PnP realiza retentativas rápidas com backoff incremental (1s, 2s, 5s...).
+- **Objetivo:** Resolver falhas momentâneas sem que o usuário perceba.
+
+### 2. Camada de Disjuntor (Polly - Circuit Breaker - Defensiva)
+Implementado como um `static readonly` no `SharePointService`, o disjuntor monitora a saúde holística da API.
+- **Configuração de Falha (`FailureRatio`):** Se 50% das requisições falharem em uma janela de 30 segundos, o disjuntor "abre".
+- **Estado Aberto (`BreakDuration`):** Durante 30 segundos, todas as chamadas ao SharePoint são bloqueadas **imediatamente** no nível da API.
+- **Motivação dos 30 Segundos:** Este intervalo é crítico para:
+    - **Cooldown do SharePoint:** Evita que a aplicação continue "bombardeando" o tenant durante um Throttling agressivo, o que poderia estender a punição.
+    - **UX Responsiva:** Em vez de deixar o usuário esperando um timeout de rede de 60s, a API retorna um erro imediato, permitindo que o Frontend informe que o sistema está em "modo de recuperação".
+    - **Recuperação de Infra:** Tempo suficiente para que falhas de roteamento ou failovers de serviço da Microsoft se estabilizem.
+
+### Sinergia Técnica
+Enquanto o **PnP** tenta consertar pequenas rachaduras, o **Polly** garante que, se a barragem romper, a aplicação não desperdice recursos tentando o impossível, preservando a integridade do servidor e a clareza para o usuário final.
 
 ---

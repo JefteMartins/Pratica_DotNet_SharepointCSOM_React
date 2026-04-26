@@ -35,7 +35,8 @@ public class SharePointContextFactory : ISharePointContextFactory
         var certificatePassword = _config["SharePoint:CertificatePassword"]
             ?? throw new Exception("CertificatePassword não configurado");
 
-        var certificate = new X509Certificate2(
+        // Usando o novo X509CertificateLoader recomendado para .NET 9/10
+        var certificate = X509CertificateLoader.LoadPkcs12FromFile(
             certificatePath,
             certificatePassword
         );

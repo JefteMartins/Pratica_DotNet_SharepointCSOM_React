@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using HotelAPI.Services;
+using HotelAPI.Models;
 
 namespace HotelAPI.Controllers;
 

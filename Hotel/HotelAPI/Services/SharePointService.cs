@@ -168,13 +168,13 @@ public class SharePointService : ISharePointService
 
             return items.AsEnumerable().Select(i => new BookingModel(
                 i.Id,
-                i["Title"]?.ToString() ?? "",
+                (string)(i["Title"] ?? "N/A"),
                 (i["RoomLookup"] as FieldLookupValue)?.LookupId ?? 0,
-                i["GuestName"]?.ToString() ?? "",
+                (string)(i["GuestName"] ?? "Guest"),
                 Convert.ToDateTime(i["CheckIn"]),
                 Convert.ToDateTime(i["CheckOut"]),
                 Convert.ToDecimal(i["TotalAmount"] ?? 0),
-                i["Status"]?.ToString() ?? ""
+                (string)(i["Status"] ?? "Unknown")
             )).ToList();
         });
     }
