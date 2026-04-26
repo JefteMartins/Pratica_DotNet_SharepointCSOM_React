@@ -8,6 +8,7 @@ public interface ISharePointService
     Task<List<HotelModel>> GetHotelsAsync();
     
     // Rooms
+    Task<List<RoomModel>> GetAllRoomsAsync();
     Task<List<RoomModel>> GetRoomsByHotelAsync(int hotelId);
     Task<bool> UpdateRoomStatusAsync(int roomId, string newStatus);
     

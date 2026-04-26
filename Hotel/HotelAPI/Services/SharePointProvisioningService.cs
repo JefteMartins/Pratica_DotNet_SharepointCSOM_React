@@ -16,15 +16,13 @@ public class SharePointProvisioningService : ISharePointProvisioningService
     {
         using var context = await _contextFactory.CreateContextAsync();
         var web = context.Web;
-        context.Load(web);
-        await context.ExecuteQueryRetryAsync();
-
+        
         // 1. Lista: Hotels
         var hotelsList = await EnsureListAsync(context, "Hotels", ListTemplateType.GenericList);
-        await EnsureFieldAsync(hotelsList, "Location", "Note"); // Multi-line text
+        await EnsureFieldAsync(hotelsList, "Location", "Note");
         await EnsureFieldAsync(hotelsList, "Stars", "Number");
         await EnsureFieldAsync(hotelsList, "Description", "Note");
-        await EnsureFieldAsync(hotelsList, "ImageUrl", "URL"); // Campo para placeholder
+        await EnsureFieldAsync(hotelsList, "ImageUrl", "URL");
 
         // 2. Lista: Rooms
         var roomsList = await EnsureListAsync(context, "Rooms", ListTemplateType.GenericList);
@@ -53,36 +51,30 @@ public class SharePointProvisioningService : ISharePointProvisioningService
 
     private async Task<List> EnsureListAsync(ClientContext context, string title, ListTemplateType template)
     {
-        var list = context.Web.Lists.GetByTitle(title);
-        context.Load(list);
-        try
-        {
-            await context.ExecuteQueryRetryAsync();
-            return list;
-        }
-        catch (ServerException)
+        // O PnP Framework possui o método ListExists
+        if (!context.Web.ListExists(title))
         {
             var listInfo = new ListCreationInformation
             {
                 Title = title,
                 TemplateType = (int)template
             };
-            list = context.Web.Lists.Add(listInfo);
-            list.Update();
+            var newList = context.Web.Lists.Add(listInfo);
+            newList.Update();
             await context.ExecuteQueryRetryAsync();
-            return list;
+            return newList;
         }
+        
+        var list = context.Web.Lists.GetByTitle(title);
+        context.Load(list);
+        await context.ExecuteQueryRetryAsync();
+        return list;
     }
 
     private async Task EnsureFieldAsync(List list, string internalName, string type)
     {
-        try
-        {
-            list.Fields.GetByInternalNameOrTitle(internalName);
-            list.Context.Load(list.Fields);
-            await list.Context.ExecuteQueryRetryAsync();
-        }
-        catch (ServerException)
+        // O PnP possui FieldExistsByName
+        if (!list.FieldExistsByName(internalName))
         {
             string fieldXml = $"<Field Type='{type}' Name='{internalName}' DisplayName='{internalName}' />";
             list.Fields.AddFieldAsXml(fieldXml, true, AddFieldOptions.DefaultValue);
@@ -93,12 +85,7 @@ public class SharePointProvisioningService : ISharePointProvisioningService
 
     private async Task EnsureChoiceFieldAsync(List list, string internalName, string[] choices)
     {
-        try
-        {
-            list.Fields.GetByInternalNameOrTitle(internalName);
-            await list.Context.ExecuteQueryRetryAsync();
-        }
-        catch (ServerException)
+        if (!list.FieldExistsByName(internalName))
         {
             string choicesXml = string.Join("", choices.Select(c => $"<CHOICE>{c}</CHOICE>"));
             string fieldXml = $@"<Field Type='Choice' Name='{internalName}' DisplayName='{internalName}'>
@@ -113,12 +100,7 @@ public class SharePointProvisioningService : ISharePointProvisioningService
 
     private async Task EnsureLookupFieldAsync(List list, string internalName, List targetList, string targetFieldName)
     {
-        try
-        {
-            list.Fields.GetByInternalNameOrTitle(internalName);
-            await list.Context.ExecuteQueryRetryAsync();
-        }
-        catch (ServerException)
+        if (!list.FieldExistsByName(internalName))
         {
             list.Context.Load(targetList, t => t.Id);
             await list.Context.ExecuteQueryRetryAsync();

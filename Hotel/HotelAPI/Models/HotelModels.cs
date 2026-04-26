@@ -1,5 +1,34 @@
 namespace HotelAPI.Models;
 
-public record HotelModel(int Id, string Name, string Location, int Stars, string Description, string ImageUrl);
-public record RoomModel(int Id, string Title, string RoomType, decimal PricePerNight, int HotelId, string Status);
-public record BookingModel(int Id, string BookingCode, int RoomId, string GuestName, DateTime CheckIn, DateTime CheckOut, decimal TotalAmount, string Status);
+public class HotelModel
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string Location { get; set; } = string.Empty;
+    public int Stars { get; set; }
+    public string Description { get; set; } = string.Empty;
+    public string ImageUrl { get; set; } = string.Empty;
+}
+
+public class RoomModel
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string RoomType { get; set; } = string.Empty;
+    public decimal PricePerNight { get; set; }
+    public int HotelId { get; set; }
+    public string Status { get; set; } = "Available";
+    public int HotelStars { get; set; }
+}
+
+public class BookingModel
+{
+    public int Id { get; set; }
+    public string? BookingCode { get; set; }
+    public int RoomId { get; set; }
+    public string GuestName { get; set; } = string.Empty;
+    public DateTime CheckIn { get; set; }
+    public DateTime CheckOut { get; set; }
+    public decimal TotalAmount { get; set; }
+    public string Status { get; set; } = "Confirmed";
+}

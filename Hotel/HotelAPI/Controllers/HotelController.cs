@@ -22,11 +22,25 @@ public class HotelController : ControllerBase
         return Ok(hotels);
     }
 
+    [HttpGet("rooms")]
+    public async Task<IActionResult> GetRooms()
+    {
+        var rooms = await _sharePointService.GetAllRoomsAsync();
+        return Ok(rooms);
+    }
+
     [HttpGet("hotels/{id}/rooms")]
     public async Task<IActionResult> GetRooms(int id)
     {
         var rooms = await _sharePointService.GetRoomsByHotelAsync(id);
         return Ok(rooms);
+    }
+
+    [HttpGet("bookings")]
+    public async Task<IActionResult> GetBookings()
+    {
+        var bookings = await _sharePointService.GetBookingsAsync();
+        return Ok(bookings);
     }
 
     [HttpPost("bookings")]

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fluentui/react-components": "^9.73.8",
+    "@fluentui/react-icons": "^2.0.325",
     "axios": "^1.15.2",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",

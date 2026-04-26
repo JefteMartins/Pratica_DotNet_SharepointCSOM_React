@@ -7,6 +7,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+// Configuração de CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // Porta padrão do Vite
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // SharePoint Services
 builder.Services.AddScoped<ISharePointContextFactory, SharePointContextFactory>();
 builder.Services.AddScoped<ISharePointService, SharePointService>();
@@ -23,6 +34,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend"); // Ativa o CORS
 app.MapControllers();
 
 app.Run();

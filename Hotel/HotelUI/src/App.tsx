@@ -1,35 +1,126 @@
-import { FluentProvider, webLightWithCustomTokens, teamsLightTheme, tokens } from '@fluentui/react-components';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { 
+  FluentProvider, 
+  makeStyles, 
+  shorthands, 
+  tokens,
+  Title2,
+  Caption1
+} from '@fluentui/react-components';
+import { 
+  Home24Regular, 
+  Building24Regular, 
+  CalendarMonth24Regular, 
+  Settings24Regular 
+} from '@fluentui/react-icons';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { hotelTheme } from './theme';
+import { HotelPortfolio } from './pages/HotelPortfolio';
+import { Dashboard } from './pages/Dashboard';
+import { RoomManagement } from './pages/RoomManagement';
+import { Bookings } from './pages/Bookings';
 import './App.css';
 
-// Customizando o tema conforme o plano
-const hotelTheme = {
-  ...teamsLightTheme,
-  colorBrandBackground: '#0078d4', // Exemplo de cor corporativa
-  borderRadiusLarge: '12px',
+const useStyles = makeStyles({
+  container: {
+    display: 'flex',
+    height: '100vh',
+    width: '100vw',
+    backgroundColor: '#faf9fc', // Grey10 do design
+  },
+  sidebar: {
+    width: '280px',
+    backgroundColor: '#001E42', // Navy Primário
+    color: '#ffffff',
+    display: 'flex',
+    flexDirection: 'column',
+    ...shorthands.padding('40px', '20px'),
+  },
+  logoArea: {
+    marginBottom: '40px',
+    ...shorthands.padding('0', '10px'),
+  },
+  nav: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  navItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    ...shorthands.padding('12px', '16px'),
+    textDecorationLine: 'none',
+    color: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: tokens.borderRadiusMedium,
+    transition: 'all 0.2s',
+    ':hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      color: '#ffffff',
+    },
+  },
+  navItemActive: {
+    backgroundColor: '#C5A059', // Gold secundário
+    color: '#001E42',
+    fontWeight: 'bold',
+    ':hover': {
+      backgroundColor: '#d4b47a',
+      color: '#001E42',
+    }
+  },
+  content: {
+    flexGrow: 1,
+    overflowY: 'auto',
+    ...shorthands.padding('32px', '40px'),
+  },
+});
+
+const NavItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => {
+  const styles = useStyles();
+  const location = useLocation();
+  const isActive = location.pathname === to;
+
+  return (
+    <Link to={to} className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}>
+      <Icon />
+      <span>{label}</span>
+    </Link>
+  );
+};
+
+const Sidebar = () => {
+  const styles = useStyles();
+  return (
+    <aside className={styles.sidebar}>
+      <div className={styles.logoArea}>
+        <Title2 style={{ color: '#ffffff', letterSpacing: '-0.02em' }}>EXCELLENCE</Title2>
+        <Caption1 style={{ color: '#C5A059', display: 'block', fontWeight: 'bold' }}>HOTEL MANAGEMENT</Caption1>
+      </div>
+      <nav className={styles.nav}>
+        <NavItem to="/" icon={Home24Regular} label="Dashboard" />
+        <NavItem to="/hotels" icon={Building24Regular} label="Hotéis" />
+        <NavItem to="/rooms" icon={Building24Regular} label="Quartos" />
+        <NavItem to="/bookings" icon={CalendarMonth24Regular} label="Reservas" />
+        <NavItem to="/settings" icon={Settings24Regular} label="Configurações" />
+      </nav>
+    </aside>
+  );
 };
 
 function App() {
+  const styles = useStyles();
+
   return (
     <FluentProvider theme={hotelTheme}>
       <Router>
-        <div className="app-container">
-          <aside className="sidebar">
-            <nav>
-              <h2>Hotel Admin</h2>
-              <ul>
-                <li>Dashboard</li>
-                <li>Hotéis</li>
-                <li>Reservas</li>
-              </ul>
-            </nav>
-          </aside>
-          <main className="content">
-            <header>
-              <h1>Bem-vindo ao Hotel Management System</h1>
-            </header>
+        <div className={styles.container}>
+          <Sidebar />
+          <main className={styles.content}>
             <Routes>
-              <Route path="/" element={<div>Dashboard Page (Em breve)</div>} />
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/hotels" element={<HotelPortfolio />} />
+              <Route path="/rooms" element={<RoomManagement />} />
+              <Route path="/bookings" element={<Bookings />} />
+              <Route path="/settings" element={<div style={{ padding: '20px' }}><Title2>Configurações</Title2><Caption1>Em breve...</Caption1></div>} />
             </Routes>
           </main>
         </div>

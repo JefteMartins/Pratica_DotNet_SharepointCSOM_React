@@ -11,15 +11,13 @@ public class SharePointService : ISharePointService
     private readonly ISharePointContextFactory _contextFactory;
     private readonly IConfiguration _config;
     
-    // Disjuntor estático para que o estado seja compartilhado entre todas as requisições da API
     private static readonly ResiliencePipeline _circuitBreakerPipeline = new ResiliencePipelineBuilder()
         .AddCircuitBreaker(new CircuitBreakerStrategyOptions
         {
-            // Se 50% das chamadas falharem em um período de 30s, abre o disjuntor
             FailureRatio = 0.5,
             SamplingDuration = TimeSpan.FromSeconds(30),
-            MinimumThroughput = 3, // Precisa de pelo menos 3 chamadas para começar a avaliar
-            BreakDuration = TimeSpan.FromSeconds(30), // Tempo que o disjuntor fica aberto
+            MinimumThroughput = 3,
+            BreakDuration = TimeSpan.FromSeconds(30),
             ShouldHandle = new PredicateBuilder().Handle<Exception>()
         })
         .Build();
@@ -49,14 +47,50 @@ public class SharePointService : ISharePointService
 
             await context.ExecuteQueryRetryAsync();
 
-            return items.AsEnumerable().Select(i => new HotelModel(
-                i.Id,
-                i["Title"]?.ToString() ?? string.Empty,
-                i["Location"]?.ToString() ?? string.Empty,
-                Convert.ToInt32(i["Stars"] ?? 0),
-                i["Description"]?.ToString() ?? string.Empty,
-                (i["ImageUrl"] as FieldUrlValue)?.Url ?? "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1000"
-            )).ToList();
+            return items.AsEnumerable().Select(i => new HotelModel {
+                Id = i.Id,
+                Name = i["Title"]?.ToString() ?? string.Empty,
+                Location = i["Location"]?.ToString() ?? string.Empty,
+                Stars = Convert.ToInt32(i["Stars"] ?? 0),
+                Description = i["Description"]?.ToString() ?? string.Empty,
+                ImageUrl = (i["ImageUrl"] as FieldUrlValue)?.Url ?? "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&q=80&w=1000"
+            }).ToList();
+        });
+    }
+
+    public async Task<List<RoomModel>> GetAllRoomsAsync()
+    {
+        return await _circuitBreakerPipeline.ExecuteAsync(async token =>
+        {
+            using var context = await _contextFactory.CreateContextAsync();
+            var list = context.Web.Lists.GetByTitle("Rooms");
+            var items = list.GetItems(CamlQuery.CreateAllItemsQuery());
+            var hotels = await GetHotelsAsync();
+
+            context.Load(items, collection => collection.Include(
+                item => item.Id,
+                item => item["Title"],
+                item => item["RoomType"],
+                item => item["PricePerNight"],
+                item => item["Status"],
+                item => item["HotelLookup"]
+            ));
+
+            await context.ExecuteQueryRetryAsync();
+
+            return items.AsEnumerable().Select(i => {
+                var hotelId = (i["HotelLookup"] as FieldLookupValue)?.LookupId ?? 0;
+                var hotel = hotels.FirstOrDefault(h => h.Id == hotelId);
+                return new RoomModel {
+                    Id = i.Id,
+                    Title = (string)(i["Title"] ?? "N/A"),
+                    RoomType = (string)(i["RoomType"] ?? "Standard"),
+                    PricePerNight = Convert.ToDecimal(i["PricePerNight"] ?? 0),
+                    HotelId = hotelId,
+                    Status = (string)(i["Status"] ?? "Available"),
+                    HotelStars = hotel?.Stars ?? 0
+                };
+            }).ToList();
         });
     }
 
@@ -69,38 +103,21 @@ public class SharePointService : ISharePointService
 
             var query = new CamlQuery
             {
-                ViewXml = $@"<View>
-                    <Query>
-                        <Where>
-                            <Eq>
-                                <FieldRef Name='HotelLookup' LookupId='TRUE' />
-                                <Value Type='Lookup'>{hotelId}</Value>
-                            </Eq>
-                        </Where>
-                    </Query>
-                </View>"
+                ViewXml = $@"<View><Query><Where><Eq><FieldRef Name='HotelLookup' LookupId='TRUE' /><Value Type='Lookup'>{hotelId}</Value></Eq></Where></Query></View>"
             };
 
             var items = list.GetItems(query);
-            context.Load(items, collection => collection.Include(
-                item => item.Id,
-                item => item["Title"],
-                item => item["RoomType"],
-                item => item["PricePerNight"],
-                item => item["Status"],
-                item => item["HotelLookup"]
-            ));
-
+            context.Load(items);
             await context.ExecuteQueryRetryAsync();
 
-            return items.AsEnumerable().Select(i => new RoomModel(
-                i.Id,
-                i["Title"]?.ToString() ?? string.Empty,
-                i["RoomType"]?.ToString() ?? string.Empty,
-                Convert.ToDecimal(i["PricePerNight"] ?? 0),
-                (i["HotelLookup"] as FieldLookupValue)?.LookupId ?? 0,
-                i["Status"]?.ToString() ?? string.Empty
-            )).ToList();
+            return items.AsEnumerable().Select(i => new RoomModel {
+                Id = i.Id,
+                Title = i["Title"]?.ToString() ?? string.Empty,
+                RoomType = i["RoomType"]?.ToString() ?? string.Empty,
+                PricePerNight = Convert.ToDecimal(i["PricePerNight"] ?? 0),
+                HotelId = (i["HotelLookup"] as FieldLookupValue)?.LookupId ?? 0,
+                Status = i["Status"]?.ToString() ?? string.Empty
+            }).ToList();
         });
     }
 
@@ -142,16 +159,16 @@ public class SharePointService : ISharePointService
             context.Load(newItem);
             await context.ExecuteQueryRetryAsync();
 
-            return new BookingModel(
-                newItem.Id,
-                newItem["Title"].ToString(),
-                booking.RoomId,
-                newItem["GuestName"].ToString(),
-                Convert.ToDateTime(newItem["CheckIn"]),
-                Convert.ToDateTime(newItem["CheckOut"]),
-                Convert.ToDecimal(newItem["TotalAmount"]),
-                newItem["Status"].ToString()
-            );
+            return new BookingModel {
+                Id = newItem.Id,
+                BookingCode = newItem["Title"].ToString(),
+                RoomId = booking.RoomId,
+                GuestName = newItem["GuestName"].ToString(),
+                CheckIn = Convert.ToDateTime(newItem["CheckIn"]),
+                CheckOut = Convert.ToDateTime(newItem["CheckOut"]),
+                TotalAmount = Convert.ToDecimal(newItem["TotalAmount"]),
+                Status = newItem["Status"].ToString()
+            };
         });
     }
 
@@ -166,16 +183,16 @@ public class SharePointService : ISharePointService
             context.Load(items);
             await context.ExecuteQueryRetryAsync();
 
-            return items.AsEnumerable().Select(i => new BookingModel(
-                i.Id,
-                (string)(i["Title"] ?? "N/A"),
-                (i["RoomLookup"] as FieldLookupValue)?.LookupId ?? 0,
-                (string)(i["GuestName"] ?? "Guest"),
-                Convert.ToDateTime(i["CheckIn"]),
-                Convert.ToDateTime(i["CheckOut"]),
-                Convert.ToDecimal(i["TotalAmount"] ?? 0),
-                (string)(i["Status"] ?? "Unknown")
-            )).ToList();
+            return items.AsEnumerable().Select(i => new BookingModel {
+                Id = i.Id,
+                BookingCode = (string)(i["Title"] ?? "N/A"),
+                RoomId = (i["RoomLookup"] as FieldLookupValue)?.LookupId ?? 0,
+                GuestName = (string)(i["GuestName"] ?? "Guest"),
+                CheckIn = Convert.ToDateTime(i["CheckIn"]),
+                CheckOut = Convert.ToDateTime(i["CheckOut"]),
+                TotalAmount = Convert.ToDecimal(i["TotalAmount"] ?? 0),
+                Status = (string)(i["Status"] ?? "Unknown")
+            }).ToList();
         });
     }
 
