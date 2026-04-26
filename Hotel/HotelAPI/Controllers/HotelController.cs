@@ -1,0 +1,52 @@
+using Microsoft.AspNetCore.Mvc;
+using HotelAPI.Services;
+
+namespace HotelAPI.Controllers;
+
+[ApiController]
+[Route("api")]
+public class HotelController : ControllerBase
+{
+    private readonly ISharePointService _sharePointService;
+
+    public HotelController(ISharePointService sharePointService)
+    {
+        _sharePointService = sharePointService;
+    }
+
+    [HttpGet("hotels")]
+    public async Task<IActionResult> GetHotels()
+    {
+        var hotels = await _sharePointService.GetHotelsAsync();
+        return Ok(hotels);
+    }
+
+    [HttpGet("hotels/{id}/rooms")]
+    public async Task<IActionResult> GetRooms(int id)
+    {
+        var rooms = await _sharePointService.GetRoomsByHotelAsync(id);
+        return Ok(rooms);
+    }
+
+    [HttpPost("bookings")]
+    public async Task<IActionResult> CreateBooking([FromBody] BookingModel booking)
+    {
+        // Aqui poderíamos adicionar lógica de validação de disponibilidade no futuro
+        var result = await _sharePointService.CreateBookingAsync(booking);
+        return Ok(result);
+    }
+
+    [HttpPatch("rooms/{id}/status")]
+    public async Task<IActionResult> UpdateRoomStatus(int id, [FromBody] string status)
+    {
+        var result = await _sharePointService.UpdateRoomStatusAsync(id, status);
+        return Ok(result);
+    }
+
+    [HttpGet("dashboard/stats")]
+    public async Task<IActionResult> GetStats()
+    {
+        var stats = await _sharePointService.GetDashboardStatsAsync();
+        return Ok(stats);
+    }
+}

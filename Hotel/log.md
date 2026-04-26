@@ -1,0 +1,32 @@
+# Log de Alterações - Hotel Management System
+
+## [2026-04-26] - Setup Inicial e Estrutura Base
+- **Criação do Projeto:**
+    - Inicialização da pasta raiz `Hotel`.
+    - Criação do Backend: `HotelAPI` (ASP.NET Core Web API).
+    - Criação do Frontend: `HotelUI` (React + TypeScript via Vite).
+    - Criação da Solution .NET: `HotelSystem.sln`.
+- **Backend (HotelAPI):**
+    - Instalação de dependências: `PnP.Framework`, `Polly`, `Microsoft.Extensions.Http.Polly`.
+    - Implementação do core de SharePoint: `SharePointContextFactory` (Autenticação via Certificado).
+    - Implementação de Serviços:
+        - `SharePointService`: Lógica de negócio para Hotéis, Quartos e Reservas com resiliência Polly.
+        - `SharePointProvisioningService`: Script de criação automática de listas e colunas no SharePoint.
+    - Controllers:
+        - `HotelController`: Endpoints de consumo de dados.
+        - `AdminController`: Endpoints administrativos (Provisionamento).
+- **Frontend (HotelUI):**
+    - Instalação de dependências: `@fluentui/react-components`, `axios`, `react-router-dom`.
+    - Configuração do serviço de API centralizado.
+    - Setup do Layout base com Fluent UI v9 e tema corporativo.
+- **Configuração de Ambiente:**
+    - Atualização do `.gitignore` global para isolar a pasta `SharepointLab`.
+    - Preparação do `appsettings.json` para o novo site SharePoint `/sites/Hotel`.
+    - **[Milestone] Conexão com SharePoint validada com sucesso (Site: Hotel).**
+    - Configuração do **Scalar** como interface de documentação de API (`/scalar/v1`).
+- **Refatoração e Refinamento (Pós-Code Review):**
+    - **Resiliência:** Implementação do padrão **Circuit Breaker** com Polly no `SharePointService`, mantendo o PnP Framework como responsável pelo Retry interno.
+    - **Arquitetura:** Criação da pasta `Models` e centralização dos records de dados.
+    - **UI/UX:** Aplicação de tema customizado no Fluent UI v9.
+    - **Dados:** Implementação do `SharePointSeedService` com integração de imagens do Unsplash.
+    - **Documentação:** Sincronização da versão do .NET (v10).
