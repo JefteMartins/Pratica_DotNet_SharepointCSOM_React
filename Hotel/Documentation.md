@@ -60,36 +60,37 @@ As listas são criadas automaticamente via `SharePointProvisioningService`.
 
 ### Hotéis e Operações
 - `GET /api/hotels`: Retorna todos os hotéis.
+- `GET /api/rooms`: Retorna todos os quartos com filtros de disponibilidade.
 - `GET /api/hotels/{id}/rooms`: Busca quartos de um hotel específico via CAML Query.
-- `POST /api/bookings`: Registra uma nova reserva.
+- `GET /api/bookings`: Retorna todas as reservas.
+- `POST /api/bookings`: Registra uma nova reserva (inclui validação de disponibilidade no servidor).
 - `PATCH /api/rooms/{id}/status`: Atualiza o estado de um quarto.
 - `GET /api/dashboard/stats`: Retorna métricas agregadas.
 
 ### Administrativo
 - `POST /api/admin/provision`: Verifica e cria a estrutura de listas no SharePoint.
+- `POST /api/admin/seed`: Popula o ambiente com dados iniciais e imagens reais.
 
 ---
 
-## 🛡️ Estratégia de Resiliência (Deep Dive)
+## 🛡️ Estratégia de Resiliência e Integridade
 
-O sistema implementa o padrão **Resilience in Depth**, combinando duas camadas complementares para garantir estabilidade mesmo sob alta carga ou instabilidade do SharePoint Online.
+### 1. Prevenção de Concorrência (Race Conditions)
+O sistema não confia apenas na verificação de disponibilidade do Frontend. Ao tentar criar uma reserva via `POST /api/bookings`, o Backend executa uma **CAML Query de Intersecção**:
+```xml
+(RequestedStart < ExistingEnd) AND (RequestedEnd > ExistingStart)
+```
+Se qualquer conflito for encontrado no SharePoint antes da persistência, a API retorna um `400 Bad Request`, garantindo que um quarto nunca seja reservado duas vezes para o mesmo período.
 
-### 1. Camada de Retentativa (PnP Framework - Otimista)
-Utilizamos o método `ExecuteQueryRetryAsync` como nossa primeira linha de defesa.
-- **Funcionamento:** Age de forma granular em cada requisição individual.
-- **Estratégia:** Se o SharePoint retornar um erro transiente (como interrupção de rede ou HTTP 429/503), o PnP realiza retentativas rápidas com backoff incremental (1s, 2s, 5s...).
-- **Objetivo:** Resolver falhas momentâneas sem que o usuário perceba.
+### 2. Camada de Retentativa (PnP Framework - Otimista)
+Utilizamos o método `ExecuteQueryRetryAsync` como nossa primeira linha de defesa contra falhas transientes de rede e HTTP 429/503.
 
-### 2. Camada de Disjuntor (Polly - Circuit Breaker - Defensiva)
-Implementado como um `static readonly` no `SharePointService`, o disjuntor monitora a saúde holística da API.
-- **Configuração de Falha (`FailureRatio`):** Se 50% das requisições falharem em uma janela de 30 segundos, o disjuntor "abre".
-- **Estado Aberto (`BreakDuration`):** Durante 30 segundos, todas as chamadas ao SharePoint são bloqueadas **imediatamente** no nível da API.
-- **Motivação dos 30 Segundos:** Este intervalo é crítico para:
-    - **Cooldown do SharePoint:** Evita que a aplicação continue "bombardeando" o tenant durante um Throttling agressivo, o que poderia estender a punição.
-    - **UX Responsiva:** Em vez de deixar o usuário esperando um timeout de rede de 60s, a API retorna um erro imediato, permitindo que o Frontend informe que o sistema está em "modo de recuperação".
-    - **Recuperação de Infra:** Tempo suficiente para que falhas de roteamento ou failovers de serviço da Microsoft se estabilizem.
-
-### Sinergia Técnica
-Enquanto o **PnP** tenta consertar pequenas rachaduras, o **Polly** garante que, se a barragem romper, a aplicação não desperdice recursos tentando o impossível, preservando a integridade do servidor e a clareza para o usuário final.
+### 3. Camada de Disjuntor (Polly - Circuit Breaker - Defensiva)
+Monitora a saúde holística da conexão. Se 50% das requisições falharem em uma janela de 30 segundos, o disjuntor "abre", impedindo novas chamadas por 30 segundos para permitir o cooldown do tenant.
 
 ---
+
+## 🏗️ Padrões de Implementação
+- **Check-and-Create:** O provisionamento verifica a existência prévia de ativos via extensões PnP, garantindo idempotência.
+- **Modelos de Dados:** Utilização de classes C# com propriedades automáticas para compatibilidade total com JSON Serialization.
+- **Validação de Negócio:** Centralizada na camada de serviço, protegendo o SharePoint contra estados inconsistentes (ex: Check-Out < Check-In).

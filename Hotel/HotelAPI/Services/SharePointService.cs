@@ -139,13 +139,59 @@ public class SharePointService : ISharePointService
 
     public async Task<BookingModel> CreateBookingAsync(BookingModel booking)
     {
+        // 1. Validação básica de datas
+        if (booking.CheckIn >= booking.CheckOut)
+        {
+            throw new ArgumentException("A data de check-out deve ser posterior à data de check-in.");
+        }
+
         return await _circuitBreakerPipeline.ExecuteAsync(async token =>
         {
             using var context = await _contextFactory.CreateContextAsync();
-            var list = context.Web.Lists.GetByTitle("Bookings");
+            
+            // 2. Verificação de Overlap (Race Condition Prevention)
+            var bookingsList = context.Web.Lists.GetByTitle("Bookings");
+            
+            // Query para encontrar qualquer reserva existente para este quarto que intersete o período desejado
+            // (Start1 < End2) AND (End1 > Start2)
+            var overlapQuery = new CamlQuery
+            {
+                ViewXml = $@"<View>
+                    <Query>
+                        <Where>
+                            <And>
+                                <Eq>
+                                    <FieldRef Name='RoomLookup' LookupId='TRUE' />
+                                    <Value Type='Lookup'>{booking.RoomId}</Value>
+                                </Eq>
+                                <And>
+                                    <Lt>
+                                        <FieldRef Name='CheckIn' />
+                                        <Value Type='DateTime' StorageTZ='TRUE'>{booking.CheckOut:yyyy-MM-ddTHH:mm:ssZ}</Value>
+                                    </Lt>
+                                    <Gt>
+                                        <FieldRef Name='CheckOut' />
+                                        <Value Type='DateTime' StorageTZ='TRUE'>{booking.CheckIn:yyyy-MM-ddTHH:mm:ssZ}</Value>
+                                    </Gt>
+                                </And>
+                            </And>
+                        </Where>
+                    </Query>
+                </View>"
+            };
 
+            var existingBookings = bookingsList.GetItems(overlapQuery);
+            context.Load(existingBookings);
+            await context.ExecuteQueryRetryAsync();
+
+            if (existingBookings.Count > 0)
+            {
+                throw new InvalidOperationException("O quarto não está disponível para o período selecionado.");
+            }
+
+            // 3. Criação da reserva
             var itemCreateInfo = new ListItemCreationInformation();
-            var newItem = list.AddItem(itemCreateInfo);
+            var newItem = bookingsList.AddItem(itemCreateInfo);
 
             newItem["Title"] = $"BK-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}";
             newItem["RoomLookup"] = new FieldLookupValue { LookupId = booking.RoomId };

@@ -24,9 +24,12 @@
     - Preparação do `appsettings.json` para o novo site SharePoint `/sites/Hotel`.
     - **[Milestone] Conexão com SharePoint validada com sucesso (Site: Hotel).**
     - Configuração do **Scalar** como interface de documentação de API (`/scalar/v1`).
-- **Refatoração e Refinamento (Pós-Code Review):**
-    - **Resiliência:** Implementação do padrão **Circuit Breaker** com Polly no `SharePointService`, mantendo o PnP Framework como responsável pelo Retry interno.
-    - **Arquitetura:** Criação da pasta `Models` e centralização dos records de dados.
-    - **UI/UX:** Aplicação de tema customizado no Fluent UI v9.
-    - **Dados:** Implementação do `SharePointSeedService` com integração de imagens do Unsplash.
-    - **Documentação:** Sincronização da versão do .NET (v10).
+- **Sprints de Funcionalidade e UX:**
+    - **Busca Inteligente:** Implementação de filtros dinâmicos de disponibilidade cruzando dados de quartos e reservas existentes via lógica de intersecção de datas.
+    - **Módulo de Reservas:** Criação do fluxo de reserva completo (Frontend + Backend) com cálculo automático de estadia e atualização de status.
+    - **Segurança e Integridade (Backend):**
+        - Implementação de verificação de disponibilidade no servidor (Overlap Check) via CAML Query para evitar conflitos de concorrência (Race Conditions).
+        - Validação rigorosa de datas (Check-Out > Check-In) na camada de serviço.
+        - Refatoração de modelos de `record` para `class` visando total compatibilidade com desserialização JSON.
+    - **Refatoração de Infraestrutura:** Transição do serviço de provisionamento para o padrão *Check-and-Create* usando extensões PnP, eliminando o uso de Exceptions para controle de fluxo.
+    - **UX/UI:** Adição de feedbacks de erro amigáveis no Frontend capturando respostas diretas da API.

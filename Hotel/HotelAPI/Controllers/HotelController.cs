@@ -46,9 +46,23 @@ public class HotelController : ControllerBase
     [HttpPost("bookings")]
     public async Task<IActionResult> CreateBooking([FromBody] BookingModel booking)
     {
-        // Aqui poderíamos adicionar lógica de validação de disponibilidade no futuro
-        var result = await _sharePointService.CreateBookingAsync(booking);
-        return Ok(result);
+        try
+        {
+            var result = await _sharePointService.CreateBookingAsync(booking);
+            return Ok(result);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { Message = "Erro interno ao processar a reserva.", Detail = ex.Message });
+        }
     }
 
     [HttpPatch("rooms/{id}/status")]

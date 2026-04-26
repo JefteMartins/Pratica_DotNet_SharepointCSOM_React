@@ -94,9 +94,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, initia
       }
       
       onClose(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao criar reserva:", error);
-      alert("Falha ao salvar reserva no SharePoint.");
+      const message = error.response?.data?.message || "Falha ao salvar reserva no SharePoint.";
+      alert(message);
     } finally {
       setIsSaving(false);
     }
