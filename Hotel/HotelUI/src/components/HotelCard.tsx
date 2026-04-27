@@ -25,7 +25,7 @@ const useStyles = makeStyles({
     ':hover': {
       transform: 'translateY(-4px)',
       boxShadow: tokens.shadow28, // Sombra mais forte no hover
-      borderColor: tokens.colorBrandStroke1, // Destaque na borda
+      ...shorthands.borderColor(tokens.colorBrandStroke1), // Destaque na borda
     },
   },
   preview: {

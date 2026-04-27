@@ -15,7 +15,7 @@ import {
   makeStyles
 } from '@fluentui/react-components';
 import { Timer24Regular, Delete24Regular, Filter24Regular, Warning24Regular } from '@fluentui/react-icons';
-import { sharePointApi } from '../services/api';
+import { labService } from '../services/api';
 
 const useStyles = makeStyles({
   grid: {
@@ -50,7 +50,7 @@ export const DeletionLab: React.FC = () => {
         minDate: filters.minDate ? new Date(filters.minDate).toISOString() : null,
         maxDate: filters.maxDate ? new Date(filters.maxDate).toISOString() : null
       };
-      const response = await sharePointApi.deleteByFilter(formattedFilters);
+      const response = await labService.deleteByFilter(formattedFilters);
       const { elapsedMs, count } = response.data;
       setResult({ time: elapsedMs, count });
     } catch (error) {
@@ -88,7 +88,7 @@ export const DeletionLab: React.FC = () => {
                 id="del-title" 
                 style={{ width: '100%' }}
                 value={filters.title} 
-                onChange={(e, d) => setFilters({...filters, title: d.value})}
+                onChange={(_, d) => setFilters({...filters, title: d.value})}
               />
             </div>
 
@@ -98,7 +98,7 @@ export const DeletionLab: React.FC = () => {
                 id="del-status" 
                 style={{ width: '100%' }}
                 value={filters.status} 
-                onChange={(e, d) => setFilters({...filters, status: d.value})}
+                onChange={(_, d) => setFilters({...filters, status: d.value})}
               >
                 <option value="">Todos</option>
                 <option value="Pending">Pending</option>

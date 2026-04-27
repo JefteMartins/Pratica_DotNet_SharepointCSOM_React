@@ -2,19 +2,18 @@ using Microsoft.SharePoint.Client;
 using PnP.Framework;
 using Polly;
 using Polly.Retry;
+using HotelAPI.Models;
+using HotelAPI.Infrastructure;
 
-namespace SharePointCsomApi.Services;
+namespace HotelAPI.Services;
 
-public class SharePointService : ISharePointService
+public class LabService : BaseSharePointService, ILabService
 {
-    private readonly ISharePointContextFactory _contextFactory;
-    private readonly IConfiguration _config;
     private static bool _stressModeEnabled = false;
 
-    public SharePointService(ISharePointContextFactory contextFactory, IConfiguration config)
+    public LabService(ISharePointContextFactory contextFactory, IConfiguration config)
+        : base(contextFactory, config)
     {
-        _contextFactory = contextFactory;
-        _config = config;
     }
 
     public void SetStressMode(bool enabled) => _stressModeEnabled = enabled;
@@ -24,8 +23,6 @@ public class SharePointService : ISharePointService
         var watch = System.Diagnostics.Stopwatch.StartNew();
         int retryCount = 0;
 
-        // Configuração da Política Polly: Wait and Retry com Exponential Backoff
-        // Em um cenário real de SharePoint, você esperaria segundos. Aqui vamos usar ms para o Lab ser dinâmico.
         var retryPolicy = new ResiliencePipelineBuilder()
             .AddRetry(new RetryStrategyOptions
             {
@@ -48,7 +45,7 @@ public class SharePointService : ISharePointService
             await retryPolicy.ExecuteAsync(async token =>
             {
                 using var context = await _contextFactory.CreateContextAsync();
-                var listName = _config["SharePoint:ListName"] ?? "Tasks";
+                var listName = _config["SharePoint:LabListName"] ?? "Tasks";
                 var list = context.Web.Lists.GetByTitle(listName);
 
                 var itemCreateInfo = new ListItemCreationInformation();
@@ -56,8 +53,6 @@ public class SharePointService : ISharePointService
                 newItem["Title"] = $"{title} (Retry: {retryCount})";
                 newItem.Update();
 
-                // SIMULAÇÃO DE STRESS
-                // Se o modo stress estiver ativo e for a primeira ou segunda tentativa, forçamos o erro 429
                 if (_stressModeEnabled && retryCount < 2)
                 {
                     throw new Exception("Artificial Throttling: HTTP 429 Too Many Requests");
@@ -79,8 +74,7 @@ public class SharePointService : ISharePointService
     public async Task<List<object>> GetTasksAsync()
     {
         using var context = await _contextFactory.CreateContextAsync();
-
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
         var items = list.GetItems(CamlQuery.CreateAllItemsQuery());
@@ -108,13 +102,12 @@ public class SharePointService : ISharePointService
     public async Task SeedDataAsync(int count)
     {
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
         var statuses = new[] { "Pending", "In Progress", "Done", "Cancelled" };
         var random = new Random();
 
-        // setando batchSize de 100 para evitar long-running single ExecuteQuery e lidar com timeouts
         int batchSize = 100;
         for (int i = 0; i < count; i++)
         {
@@ -137,7 +130,7 @@ public class SharePointService : ISharePointService
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
         var query = new CamlQuery
@@ -149,10 +142,7 @@ public class SharePointService : ISharePointService
         };
 
         var items = list.GetItems(query);
-        
-        // CORREÇÃO: Precisamos carregar a propriedade da coleção explicitamente
         context.Load(items, i => i.ListItemCollectionPosition);
-        
         context.Load(items, collection => collection.Include(
             item => item.Id,
             item => item["Title"],
@@ -180,7 +170,7 @@ public class SharePointService : ISharePointService
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
         var parameters = new RenderListDataParameters
@@ -193,7 +183,6 @@ public class SharePointService : ISharePointService
         await context.ExecuteQueryRetryAsync();
         watch.Stop();
 
-        // Fazendo o Parse do JSON retornado pelo SharePoint
         var items = new List<object>();
         try 
         {
@@ -212,7 +201,6 @@ public class SharePointService : ISharePointService
         }
         catch (Exception)
         {
-            // Em caso de erro no parse, retornamos a lista vazia mas mantemos o tempo
         }
         
         return new StreamResult(items, watch.ElapsedMilliseconds);
@@ -222,7 +210,7 @@ public class SharePointService : ISharePointService
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
         
         var statuses = new[] { "Pending", "In Progress", "Done" };
@@ -256,7 +244,7 @@ public class SharePointService : ISharePointService
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
         var statuses = new[] { "Pending", "In Progress", "Done" };
@@ -292,7 +280,7 @@ public class SharePointService : ISharePointService
     public async Task<List<object>> SearchTasksAsync(SearchFilters filters)
     {
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
         var conditions = new List<string>();
@@ -357,10 +345,6 @@ public class SharePointService : ISharePointService
         }
         catch (ServerException ex) when (ex.Message.Contains("limite") || ex.Message.Contains("excede") || ex.Message.Contains("threshold"))
         {
-            // FALLBACK: O SharePoint bloqueou a consulta devido ao List View Threshold (> 5000 itens)
-            // Solução para o Lab: Buscar os últimos 2000 itens ignorando os filtros no servidor e filtrar em memória (LINQ)
-            Console.WriteLine("[DEBUG] Threshold atingido. Usando Fallback em memória...");
-
             var fallbackQuery = new CamlQuery { ViewXml = $"<View><Query><OrderBy><FieldRef Name='ID' Ascending='FALSE'/></OrderBy></Query><RowLimit>2000</RowLimit></View>" };
             var fallbackItems = list.GetItems(fallbackQuery);
             
@@ -381,7 +365,6 @@ public class SharePointService : ISharePointService
                 DueDate = i["DueDate"]?.ToString() ?? string.Empty
             });
 
-            // Aplica os filtros em memória
             if (!string.IsNullOrEmpty(filters.Title))
                 allRecentItems = allRecentItems.Where(x => x.Title.Contains(filters.Title, StringComparison.OrdinalIgnoreCase));
                 
@@ -395,7 +378,7 @@ public class SharePointService : ISharePointService
     public async Task<List<object>> GetFieldMappingsAsync()
     {
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
         var fields = list.Fields;
 
@@ -416,10 +399,9 @@ public class SharePointService : ISharePointService
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
-        // Buscar os IDs dos últimos N itens
         var query = new CamlQuery { ViewXml = $"<View><Query><OrderBy><FieldRef Name='ID' Ascending='FALSE'/></OrderBy></Query><RowLimit>{count}</RowLimit></View>" };
         var items = list.GetItems(query);
         context.Load(items, i => i.Include(item => item.Id));
@@ -427,8 +409,8 @@ public class SharePointService : ISharePointService
 
         foreach (var item in items.ToList())
         {
-            item.Recycle(); // Envia para lixeira
-            await context.ExecuteQueryRetryAsync(); // Round-trip por item
+            item.Recycle();
+            await context.ExecuteQueryRetryAsync();
         }
 
         watch.Stop();
@@ -439,7 +421,7 @@ public class SharePointService : ISharePointService
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
         var query = new CamlQuery { ViewXml = $"<View><Query><OrderBy><FieldRef Name='ID' Ascending='FALSE'/></OrderBy></Query><RowLimit>{count}</RowLimit></View>" };
@@ -465,10 +447,9 @@ public class SharePointService : ISharePointService
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
-        // Construindo a mesma lógica de CAML do Search
         var conditions = new List<string>();
         if (!string.IsNullOrEmpty(filters.Title))
             conditions.Add($"<Contains><FieldRef Name='Title'/><Value Type='Text'>{filters.Title}</Value></Contains>");
@@ -491,7 +472,6 @@ public class SharePointService : ISharePointService
         int totalDeleted = 0;
         bool hasMore = true;
 
-        // Loop de Exaustão: Continua buscando e deletando até limpar tudo
         while (hasMore)
         {
             var query = new CamlQuery { ViewXml = $"<View><Query>{camlWhere}</Query><RowLimit>200</RowLimit></View>" };
@@ -506,7 +486,6 @@ public class SharePointService : ISharePointService
                 break;
             }
 
-            // Deleta o lote atual
             for (int i = 0; i < itemList.Count; i++)
             {
                 itemList[i].Recycle();
@@ -517,8 +496,6 @@ public class SharePointService : ISharePointService
             }
 
             totalDeleted += itemList.Count;
-
-            // Se o lote veio incompleto, significa que acabaram os itens no servidor
             if (itemList.Count < 200)
             {
                 hasMore = false;
@@ -532,7 +509,7 @@ public class SharePointService : ISharePointService
     public async Task<bool> UpdateTaskAsync(TaskUpdateModel task)
     {
         using var context = await _contextFactory.CreateContextAsync();
-        var listName = _config["SharePoint:ListName"] ?? "Tasks";
+        var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
         var item = list.GetItemById(task.Id);

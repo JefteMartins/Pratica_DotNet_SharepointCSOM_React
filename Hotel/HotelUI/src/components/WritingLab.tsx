@@ -14,7 +14,7 @@ import {
   makeStyles
 } from '@fluentui/react-components';
 import { Timer24Regular, Flash24Regular, Warning24Regular, CheckmarkCircle24Regular } from '@fluentui/react-icons';
-import { sharePointApi } from '../services/api';
+import { labService } from '../services/api';
 
 const useStyles = makeStyles({
   grid: {
@@ -39,7 +39,7 @@ export const WritingLab: React.FC = () => {
     setIsLoading(true);
     setCurrentMode('Sequential');
     try {
-      const response = await sharePointApi.createSequential(itemCount);
+      const response = await labService.createSequential(itemCount);
       const { elapsedMs } = response.data;
       setSequentialResult({ 
         time: elapsedMs, 
@@ -57,7 +57,7 @@ export const WritingLab: React.FC = () => {
     setIsLoading(true);
     setCurrentMode('Batched');
     try {
-      const response = await sharePointApi.createBatched(itemCount, 50);
+      const response = await labService.createBatched(itemCount, 50);
       const { elapsedMs } = response.data;
       setBatchedResult({ 
         time: elapsedMs, 
@@ -85,7 +85,7 @@ export const WritingLab: React.FC = () => {
             id="item-count" 
             type="number" 
             value={itemCount.toString()} 
-            onChange={(e, data) => setItemCount(parseInt(data.value) || 0)} 
+            onChange={(_, data) => setItemCount(parseInt(data.value) || 0)} 
           />
         </div>
       </Card>

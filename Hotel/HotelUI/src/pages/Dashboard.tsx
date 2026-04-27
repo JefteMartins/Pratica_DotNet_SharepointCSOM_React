@@ -8,8 +8,7 @@ import {
   tokens,
   Card,
   Text,
-  Subtitle1,
-  Display
+  LargeTitle
 } from '@fluentui/react-components';
 import { 
   Building24Regular, 
@@ -101,36 +100,37 @@ export const Dashboard: React.FC = () => {
           <div className={`${styles.iconArea} ${styles.navyIcon}`}>
             <Building24Regular />
           </div>
-          <Text size={200} color={tokens.colorNeutralForeground3}>Total de Hotéis</Text>
-          <Display weight="semibold">{stats?.totalHotels || 0}</Display>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Total de Hotéis</Text>
+          <LargeTitle>{stats?.totalHotels || 0}</LargeTitle>
         </Card>
 
         <Card className={styles.statCard} appearance="subtle">
           <div className={`${styles.iconArea} ${styles.goldIcon}`}>
             <CalendarCheckmark24Regular />
           </div>
-          <Text size={200} color={tokens.colorNeutralForeground3}>Reservas Realizadas</Text>
-          <Display weight="semibold">{stats?.totalBookings || 0}</Display>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Reservas Realizadas</Text>
+          <LargeTitle>{stats?.totalBookings || 0}</LargeTitle>
         </Card>
 
         <Card className={styles.statCard} appearance="subtle">
           <div className={`${styles.iconArea} ${styles.navyIcon}`}>
             <PersonAvailable24Regular />
           </div>
-          <Text size={200} color={tokens.colorNeutralForeground3}>Hóspedes Ativos</Text>
-          <Display weight="semibold">{stats?.activeBookings || 0}</Display>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Hóspedes Ativos</Text>
+          <LargeTitle>{stats?.activeBookings || 0}</LargeTitle>
         </Card>
 
         <Card className={styles.statCard} appearance="subtle">
           <div className={`${styles.iconArea} ${styles.goldIcon}`}>
             <Money24Regular />
           </div>
-          <Text size={200} color={tokens.colorNeutralForeground3}>Receita Total</Text>
-          <Display weight="semibold">
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Receita Total</Text>
+          <LargeTitle>
             {stats?.totalRevenue ? `R$ ${stats.totalRevenue.toLocaleString()}` : 'R$ 0'}
-          </Display>
+          </LargeTitle>
         </Card>
       </div>
     </div>
   );
 };
+

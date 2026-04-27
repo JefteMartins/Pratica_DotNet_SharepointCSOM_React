@@ -16,8 +16,7 @@ import {
 } from '@fluentui/react-components';
 import { 
   ArrowRight24Regular, 
-  Star24Filled, 
-  CalendarMonth24Regular 
+  Star24Filled
 } from '@fluentui/react-icons';
 import { hotelService } from '../services/api';
 import { BookingModal } from '../components/BookingModal';
@@ -58,7 +57,7 @@ const useStyles = makeStyles({
     transition: 'all 0.2s',
     ':hover': {
       boxShadow: tokens.shadow16,
-      borderColor: tokens.colorBrandStroke1,
+      ...shorthands.borderColor(tokens.colorBrandStroke1),
     }
   },
   statusBar: {
@@ -78,8 +77,8 @@ const useStyles = makeStyles({
     alignItems: 'flex-start',
   },
   statusAvailable: { backgroundColor: tokens.colorPaletteGreenBackground3 },
-  statusOccupied: { backgroundColor: tokens.colorPaletteBlueBackground3 },
-  statusMaintenance: { backgroundColor: tokens.colorPaletteOrangeBackground3 },
+  statusOccupied: { backgroundColor: tokens.colorPaletteBlueBackground2 },
+  statusMaintenance: { backgroundColor: tokens.colorPaletteDarkOrangeBackground3 },
   statusCleaning: { backgroundColor: tokens.colorPaletteYellowBackground3 },
   goldStar: { color: '#C5A059' }
 });

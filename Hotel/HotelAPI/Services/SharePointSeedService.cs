@@ -1,5 +1,6 @@
 using Microsoft.SharePoint.Client;
 using PnP.Framework;
+using HotelAPI.Infrastructure;
 
 namespace HotelAPI.Services;
 

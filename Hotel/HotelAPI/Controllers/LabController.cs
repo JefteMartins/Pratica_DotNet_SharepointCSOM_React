@@ -1,18 +1,19 @@
 using Microsoft.AspNetCore.Mvc;
-using SharePointCsomApi.Services;
+using HotelAPI.Services;
+using HotelAPI.Models;
 
-namespace SharePointCsomApi.Controllers;
+namespace HotelAPI.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class TasksController : ControllerBase
+[Route("api/lab")]
+public class LabController : ControllerBase
 {
-    private readonly ISharePointService _sharePointService;
-    private readonly ILogger<TasksController> _logger;
+    private readonly ILabService _labService;
+    private readonly ILogger<LabController> _logger;
 
-    public TasksController(ISharePointService sharePointService, ILogger<TasksController> logger)
+    public LabController(ILabService labService, ILogger<LabController> logger)
     {
-        _sharePointService = sharePointService;
+        _labService = labService;
         _logger = logger;
     }
 
@@ -21,7 +22,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var result = await _sharePointService.GetFieldMappingsAsync();
+            var result = await _labService.GetFieldMappingsAsync();
             return Ok(result);
         }
         catch (Exception ex)
@@ -30,12 +31,12 @@ public class TasksController : ControllerBase
         }
     }
 
-    [HttpGet]
+    [HttpGet("tasks")]
     public async Task<IActionResult> GetTasks()
     {
         try
         {
-            var tasks = await _sharePointService.GetTasksAsync();
+            var tasks = await _labService.GetTasksAsync();
             return Ok(tasks);
         }
         catch (Exception ex)
@@ -50,7 +51,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            await _sharePointService.SeedDataAsync(count);
+            await _labService.SeedDataAsync(count);
             return Ok($"Sucesso ao gerar {count} itens.");
         }
         catch (Exception ex)
@@ -65,7 +66,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var result = await _sharePointService.GetTasksPagedAsync(pageSize, pos);
+            var result = await _labService.GetTasksPagedAsync(pageSize, pos);
             return Ok(result);
         }
         catch (Exception ex)
@@ -80,7 +81,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var result = await _sharePointService.GetTasksStreamAsync(pageSize);
+            var result = await _labService.GetTasksStreamAsync(pageSize);
             return Ok(result);
         }
         catch (Exception ex)
@@ -95,7 +96,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var result = await _sharePointService.CreateItemsSequentialAsync(count);
+            var result = await _labService.CreateItemsSequentialAsync(count);
             return Ok(result);
         }
         catch (Exception ex)
@@ -110,7 +111,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var result = await _sharePointService.CreateItemsBatchedAsync(count, batchSize);
+            var result = await _labService.CreateItemsBatchedAsync(count, batchSize);
             return Ok(result);
         }
         catch (Exception ex)
@@ -123,7 +124,7 @@ public class TasksController : ControllerBase
     [HttpPost("resilience/stress-toggle")]
     public IActionResult ToggleStress([FromQuery] bool enabled)
     {
-        _sharePointService.SetStressMode(enabled);
+        _labService.SetStressMode(enabled);
         return Ok(new { StressMode = enabled });
     }
 
@@ -132,7 +133,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var result = await _sharePointService.CreateItemWithResilienceAsync(title);
+            var result = await _labService.CreateItemWithResilienceAsync(title);
             return Ok(result);
         }
         catch (Exception ex)
@@ -147,7 +148,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var result = await _sharePointService.SearchTasksAsync(filters);
+            var result = await _labService.SearchTasksAsync(filters);
             return Ok(result);
         }
         catch (Exception ex)
@@ -162,7 +163,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var result = await _sharePointService.DeleteItemsSequentialAsync(count);
+            var result = await _labService.DeleteItemsSequentialAsync(count);
             return Ok(result);
         }
         catch (Exception ex)
@@ -177,7 +178,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var result = await _sharePointService.DeleteItemsBatchedAsync(count, batchSize);
+            var result = await _labService.DeleteItemsBatchedAsync(count, batchSize);
             return Ok(result);
         }
         catch (Exception ex)
@@ -192,7 +193,7 @@ public class TasksController : ControllerBase
     {
         try
         {
-            var result = await _sharePointService.DeleteTasksByFilterAsync(filters);
+            var result = await _labService.DeleteTasksByFilterAsync(filters);
             return Ok(result);
         }
         catch (Exception ex)
@@ -202,12 +203,12 @@ public class TasksController : ControllerBase
         }
     }
 
-    [HttpPut]
+    [HttpPut("task")]
     public async Task<IActionResult> UpdateTask([FromBody] TaskUpdateModel task)
     {
         try
         {
-            var success = await _sharePointService.UpdateTaskAsync(task);
+            var success = await _labService.UpdateTaskAsync(task);
             return Ok(new { Success = success });
         }
         catch (Exception ex)

@@ -7,7 +7,6 @@ import {
   CardHeader, 
   Spinner,
   Text,
-  tokens,
   Input,
   Label,
   Select,
@@ -21,7 +20,7 @@ import {
   makeStyles
 } from '@fluentui/react-components';
 import { Search24Regular, Filter24Regular, Delete24Regular } from '@fluentui/react-icons';
-import { sharePointApi } from '../services/api';
+import { labService } from '../services/api';
 import { TaskEditModal } from './TaskEditModal';
 
 const useStyles = makeStyles({
@@ -76,7 +75,7 @@ export const CustomSearchLab: React.FC = () => {
         minDate: filters.minDate ? new Date(filters.minDate).toISOString() : null,
         maxDate: filters.maxDate ? new Date(filters.maxDate).toISOString() : null
       };
-      const response = await sharePointApi.searchTasks(formattedFilters);
+      const response = await labService.searchTasks(formattedFilters);
       setResults(response.data);
     } catch (error) {
       console.error("Erro na busca customizada", error);
@@ -115,7 +114,8 @@ export const CustomSearchLab: React.FC = () => {
         <Card className={styles.card}>
           <CardHeader 
             header={<Subtitle1>Filtros</Subtitle1>}
-            icon={<Filter24Regular />}
+            // Fixed: icon slot is not valid in CardHeader, use image or remove
+            image={<Filter24Regular />}
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', padding: '10px' }}>
             
@@ -125,7 +125,7 @@ export const CustomSearchLab: React.FC = () => {
                 id="search-title" 
                 style={{ width: '100%' }}
                 value={filters.title} 
-                onChange={(e, d) => setFilters({...filters, title: d.value})}
+                onChange={(_, d) => setFilters({...filters, title: d.value})}
               />
             </div>
 
@@ -135,7 +135,7 @@ export const CustomSearchLab: React.FC = () => {
                 id="search-status" 
                 style={{ width: '100%' }}
                 value={filters.status} 
-                onChange={(e, d) => setFilters({...filters, status: d.value})}
+                onChange={(_, d) => setFilters({...filters, status: d.value})}
               >
                 <option value="">Todos</option>
                 <option value="Pending">Pending</option>
@@ -211,3 +211,4 @@ export const CustomSearchLab: React.FC = () => {
     </div>
   );
 };
+

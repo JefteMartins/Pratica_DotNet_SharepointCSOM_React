@@ -19,7 +19,7 @@ import {
   makeStyles
 } from '@fluentui/react-components';
 import { Timer24Regular, ArrowRight24Regular, Flash24Regular } from '@fluentui/react-icons';
-import { sharePointApi } from '../services/api';
+import { labService } from '../services/api';
 import { TaskEditModal } from './TaskEditModal';
 
 const useStyles = makeStyles({
@@ -67,7 +67,7 @@ export const ReadingLab: React.FC = () => {
     setIsClassicLoading(true);
     try {
       const pos = isNext ? nextPos || undefined : undefined;
-      const response = await sharePointApi.getPaged(10, pos);
+      const response = await labService.getPaged(10, pos);
       const { items, nextPosition, elapsedMs } = response.data;
       
       setClassicItems(items);
@@ -83,7 +83,7 @@ export const ReadingLab: React.FC = () => {
   const fetchStream = async () => {
     setIsStreamLoading(true);
     try {
-      const response = await sharePointApi.getStream(10);
+      const response = await labService.getStream(10);
       const { items, elapsedMs } = response.data;
       setStreamItems(items);
       setStreamTime(elapsedMs);

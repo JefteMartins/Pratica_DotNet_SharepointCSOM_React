@@ -14,12 +14,9 @@ import {
   makeStyles
 } from '@fluentui/react-components';
 import { 
-  ShieldCheckmark24Regular, 
-  Warning24Regular, 
-  History24Regular,
-  Flash24Regular 
+  ShieldCheckmark24Regular 
 } from '@fluentui/react-icons';
-import { sharePointApi } from '../services/api';
+import { labService } from '../services/api';
 
 const useStyles = makeStyles({
   grid: {
@@ -38,7 +35,7 @@ const useStyles = makeStyles({
     gap: '5px',
     fontFamily: 'monospace',
     padding: '10px',
-    backgroundColor: tokens.colorNeutralBackgroundInset
+    backgroundColor: tokens.colorNeutralBackgroundInverted
   }
 });
 
@@ -67,7 +64,7 @@ export const ResilienceLab: React.FC = () => {
 
   const handleToggleStress = async (enabled: boolean) => {
     try {
-      await sharePointApi.toggleStress(enabled);
+      await labService.toggleStress(enabled);
       setStressEnabled(enabled);
       addLog(`Modo Stress ${enabled ? 'ATIVADO' : 'DESATIVADO'}`, enabled ? 'warning' : 'info');
     } catch (error) {
@@ -81,7 +78,7 @@ export const ResilienceLab: React.FC = () => {
     addLog("Iniciando operação resiliente...", 'info');
     
     try {
-      const response = await sharePointApi.createResilient("Resilience Test");
+      const response = await labService.createResilient("Resilience Test");
       const { success, retries, elapsedMs, message } = response.data;
 
       if (success) {

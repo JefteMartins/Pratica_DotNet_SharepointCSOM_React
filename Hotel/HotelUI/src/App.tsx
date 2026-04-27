@@ -10,7 +10,8 @@ import {
   Home24Regular, 
   Building24Regular, 
   CalendarMonth24Regular, 
-  Settings24Regular 
+  Settings24Regular,
+  Flash24Regular
 } from '@fluentui/react-icons';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { hotelTheme } from './theme';
@@ -18,6 +19,7 @@ import { HotelPortfolio } from './pages/HotelPortfolio';
 import { Dashboard } from './pages/Dashboard';
 import { RoomManagement } from './pages/RoomManagement';
 import { Bookings } from './pages/Bookings';
+import { LabDashboard } from './pages/LabDashboard';
 import './App.css';
 
 const useStyles = makeStyles({
@@ -77,7 +79,7 @@ const useStyles = makeStyles({
 const NavItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => {
   const styles = useStyles();
   const location = useLocation();
-  const isActive = location.pathname === to;
+  const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
 
   return (
     <Link to={to} className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}>
@@ -100,6 +102,7 @@ const Sidebar = () => {
         <NavItem to="/hotels" icon={Building24Regular} label="Hotéis" />
         <NavItem to="/rooms" icon={Building24Regular} label="Quartos" />
         <NavItem to="/bookings" icon={CalendarMonth24Regular} label="Reservas" />
+        <NavItem to="/lab" icon={Flash24Regular} label="Technical Lab" />
         <NavItem to="/settings" icon={Settings24Regular} label="Configurações" />
       </nav>
     </aside>
@@ -120,6 +123,7 @@ function App() {
               <Route path="/hotels" element={<HotelPortfolio />} />
               <Route path="/rooms" element={<RoomManagement />} />
               <Route path="/bookings" element={<Bookings />} />
+              <Route path="/lab/*" element={<LabDashboard />} />
               <Route path="/settings" element={<div style={{ padding: '20px' }}><Title2>Configurações</Title2><Caption1>Em breve...</Caption1></div>} />
             </Routes>
           </main>

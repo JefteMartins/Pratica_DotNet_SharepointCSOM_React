@@ -11,10 +11,9 @@ import {
   Label, 
   Select, 
   Textarea,
-  Spinner,
-  tokens
+  Spinner
 } from '@fluentui/react-components';
-import { sharePointApi } from '../services/api';
+import { labService } from '../services/api';
 
 interface Task {
   id: number;
@@ -45,7 +44,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      await sharePointApi.updateTask({
+      await labService.updateTask({
         id: formData.id,
         title: formData.title,
         status: formData.status,
@@ -74,7 +73,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
                 id="edit-title" 
                 style={{ width: '100%' }}
                 value={formData.title} 
-                onChange={(e, d) => setFormData({...formData, title: d.value})}
+                onChange={(_, d) => setFormData({...formData, title: d.value})}
               />
             </div>
 
@@ -84,7 +83,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
                 id="edit-status" 
                 style={{ width: '100%' }}
                 value={formData.status} 
-                onChange={(e, d) => setFormData({...formData, status: d.value})}
+                onChange={(_, d) => setFormData({...formData, status: d.value})}
               >
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
@@ -99,7 +98,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
                 id="edit-desc" 
                 style={{ width: '100%' }}
                 value={formData.description || ''} 
-                onChange={(e, d) => setFormData({...formData, description: d.value})}
+                onChange={(_, d) => setFormData({...formData, description: d.value})}
               />
             </div>
 
@@ -110,7 +109,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
                 type="date"
                 style={{ width: '100%' }}
                 value={formData.dueDate ? formData.dueDate.split('T')[0] : ''} 
-                onChange={(e, d) => setFormData({...formData, dueDate: d.value})}
+                onChange={(_, d) => setFormData({...formData, dueDate: d.value})}
               />
             </div>
 
@@ -128,3 +127,4 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
     </Dialog>
   );
 };
+

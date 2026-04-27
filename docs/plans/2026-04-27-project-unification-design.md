@@ -52,7 +52,7 @@ The unified project will adopt a single-solution "Platform" model to maximize co
 
 ## 🛠️ 4. Transition Plan
 
-1. **Phase 1:** Port the `SharepointLab` backend services and controllers to `HotelAPI`.
-2. **Phase 2:** Merge the `sharepoint-lab-ui` components and routes into `HotelUI`.
-3. **Phase 3:** Standardize `appsettings.json` and `.env` to a single configuration set.
-4. **Phase 4:** Decommission the original `SharepointLab/` directory.
+- [x] **Phase 1:** Port the `SharepointLab` backend services and controllers to `HotelAPI`.
+- [x] **Phase 2:** Merge the `sharepoint-lab-ui` components and routes into `HotelUI`.
+- [x] **Phase 3:** Standardize `appsettings.json` and `.env` to a single configuration set.
+- [x] **Phase 4:** Decommission the original `SharepointLab/` directory.

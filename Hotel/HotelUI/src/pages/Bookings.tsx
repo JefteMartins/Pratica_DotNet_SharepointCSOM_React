@@ -67,11 +67,11 @@ export const Bookings: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Confirmed': return 'success';
+      case 'Confirmed': return 'informative';
       case 'CheckedIn': return 'brand';
       case 'Cancelled': return 'danger';
-      case 'CheckedOut': return 'informative';
-      default: return 'neutral';
+      case 'CheckedOut': return 'success';
+      default: return 'subtle';
     }
   };
 

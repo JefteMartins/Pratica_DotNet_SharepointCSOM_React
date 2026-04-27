@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { 
-  FluentProvider, 
-  webLightTheme, 
   TabList, 
   Tab, 
   Title1, 
@@ -17,12 +15,12 @@ import {
   shorthands
 } from '@fluentui/react-components';
 import { Database24Regular, ReadingList24Regular, ArrowSync24Regular, Edit24Regular, ShieldCheckmark24Regular, Search24Regular, Delete24Regular } from '@fluentui/react-icons';
-import { ReadingLab } from './components/ReadingLab';
-import { WritingLab } from './components/WritingLab';
-import { ResilienceLab } from './components/ResilienceLab';
-import { CustomSearchLab } from './components/CustomSearchLab';
-import { DeletionLab } from './components/DeletionLab';
-import { sharePointApi } from './services/api';
+import { ReadingLab } from '../components/ReadingLab';
+import { WritingLab } from '../components/WritingLab';
+import { ResilienceLab } from '../components/ResilienceLab';
+import { CustomSearchLab } from '../components/CustomSearchLab';
+import { DeletionLab } from '../components/DeletionLab';
+import { labService } from '../services/api';
 
 const useStyles = makeStyles({
   container: {
@@ -54,7 +52,6 @@ const useStyles = makeStyles({
   },
   tabList: {
     marginBottom: '30px',
-    // Permite scroll horizontal se as abas não couberem
     overflowX: 'auto',
     whiteSpace: 'nowrap',
     '-webkit-overflow-scrolling': 'touch',
@@ -65,7 +62,7 @@ const useStyles = makeStyles({
   }
 });
 
-function App() {
+export const LabDashboard = () => {
   const styles = useStyles();
   const [selectedTab, setSelectedTab] = useState<'reading' | 'writing' | 'resilience' | 'search' | 'deletion' | 'data'>('reading');
   const [seeding, setSeeding] = useState(false);
@@ -82,7 +79,7 @@ function App() {
     setSeeding(true);
     setStatus({ message: `Gerando ${count} tarefas no SharePoint...`, type: 'info' });
     try {
-      await sharePointApi.seedData(count);
+      await labService.seedData(count);
       setStatus({ message: `Sucesso! ${count} tarefas foram criadas.`, type: 'success' });
     } catch (error) {
       console.error(error);
@@ -93,18 +90,17 @@ function App() {
   };
 
   return (
-    <FluentProvider theme={webLightTheme}>
-      <div className={styles.container}>
-        <div className={styles.contentCard}>
-          
-          <header className={styles.header}>
-            <LargeTitle block style={{ color: tokens.colorBrandForeground1, fontSize: isMobile ? '24px' : undefined }}>
-              SharePoint CSOM <span style={{ fontWeight: tokens.fontWeightRegular }}>Performance Lab</span>
-            </LargeTitle>
-            <Text size={isMobile ? 300 : 400} style={{ color: tokens.colorNeutralForeground3 }}>
-              Ambiente de testes para técnicas avançadas de leitura e escrita em listas de grande volume.
-            </Text>
-          </header>
+    <div className={styles.container}>
+      <div className={styles.contentCard}>
+        
+        <header className={styles.header}>
+          <LargeTitle block style={{ color: tokens.colorBrandForeground1, fontSize: isMobile ? '24px' : undefined }}>
+            SharePoint CSOM <span style={{ fontWeight: tokens.fontWeightRegular }}>Performance Lab</span>
+          </LargeTitle>
+          <Text size={isMobile ? 300 : 400} style={{ color: tokens.colorNeutralForeground3 }}>
+            Ambiente de testes para técnicas avançadas de leitura e escrita em listas de grande volume.
+          </Text>
+        </header>
 
         {status && (
           <MessageBar intent={status.type} style={{ marginBottom: '20px' }}>
@@ -118,7 +114,7 @@ function App() {
           <TabList 
             selectedValue={selectedTab} 
             onTabSelect={(_, data) => setSelectedTab(data.value as any)}
-            vertical={false} // Mantém horizontal mas com scroll se necessário
+            vertical={false}
           >
             <Tab value="reading" icon={<ReadingList24Regular />}>{isMobile ? "Read" : "The Reading Lab"}</Tab>
             <Tab value="writing" icon={<Edit24Regular />}>{isMobile ? "Write" : "The Writing Lab"}</Tab>
@@ -163,9 +159,6 @@ function App() {
           )}
         </main>
       </div>
-     </div>
-    </FluentProvider>
+    </div>
   );
-}
-
-export default App;
+};
