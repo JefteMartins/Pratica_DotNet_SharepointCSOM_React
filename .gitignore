@@ -28,6 +28,5 @@ Thumbs.db
 Desktop.ini
 
 # Project Specific
-SharepointLab/
 *.pfx
 !appsettings.Example.json
