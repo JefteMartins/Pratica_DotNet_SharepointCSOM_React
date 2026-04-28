@@ -3,11 +3,11 @@ import {
   makeStyles, 
   Title1, 
   Subtitle2, 
-  Spinner,
   tokens
 } from '@fluentui/react-components';
 import { hotelService } from '../services/api';
 import { HotelCard } from '../components/HotelCard';
+import { HotelGridSkeleton } from '../components/PageSkeletons';
 
 const useStyles = makeStyles({
   root: {
@@ -57,14 +57,6 @@ export const HotelPortfolio: React.FC = () => {
     fetchHotels();
   }, []);
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
-        <Spinner label="Loading luxury portfolio..." />
-      </div>
-    );
-  }
-
   return (
     <div className={styles.root}>
       <div className={styles.header}>
@@ -74,19 +66,23 @@ export const HotelPortfolio: React.FC = () => {
         </Subtitle2>
       </div>
 
-      <div className={styles.grid}>
-        {hotels.map(hotel => (
-          <HotelCard
-            key={hotel.id}
-            name={hotel.name}
-            location={hotel.location}
-            stars={hotel.stars}
-            description={hotel.description}
-            imageUrl={hotel.imageUrl}
-            onViewRooms={() => console.log(`View rooms for hotel ${hotel.id}`)}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <HotelGridSkeleton />
+      ) : (
+        <div className={styles.grid}>
+          {hotels.map(hotel => (
+            <HotelCard
+              key={hotel.id}
+              name={hotel.name}
+              location={hotel.location}
+              stars={hotel.stars}
+              description={hotel.description}
+              imageUrl={hotel.imageUrl}
+              onViewRooms={() => console.log(`View rooms for hotel ${hotel.id}`)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

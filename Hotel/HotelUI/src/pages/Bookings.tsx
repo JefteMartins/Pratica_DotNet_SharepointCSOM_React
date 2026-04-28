@@ -4,7 +4,6 @@ import {
   shorthands, 
   Title1, 
   Subtitle2, 
-  Spinner,
   tokens,
   Table,
   TableHeader,
@@ -16,6 +15,7 @@ import {
   Text
 } from '@fluentui/react-components';
 import { hotelService } from '../services/api';
+import { BookingsTableSkeleton } from '../components/PageSkeletons';
 
 const useStyles = makeStyles({
   root: {
@@ -87,7 +87,7 @@ export const Bookings: React.FC = () => {
       </div>
 
       <div className={styles.tableContainer}>
-        {loading ? <Spinner label="Loading bookings..." style={{ padding: '40px' }} /> : (
+        {loading ? <BookingsTableSkeleton /> : (
           <Table>
             <TableHeader>
               <TableRow>

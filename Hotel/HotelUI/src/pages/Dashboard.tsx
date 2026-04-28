@@ -4,7 +4,6 @@ import {
   shorthands, 
   Title1, 
   Subtitle2, 
-  Spinner,
   tokens,
   Card,
   Text,
@@ -17,6 +16,7 @@ import {
   PersonAvailable24Regular 
 } from '@fluentui/react-icons';
 import { hotelService } from '../services/api';
+import { DashboardSkeleton } from '../components/PageSkeletons';
 
 const useStyles = makeStyles({
   root: {
@@ -84,8 +84,6 @@ export const Dashboard: React.FC = () => {
     fetchStats();
   }, []);
 
-  if (loading) return <Spinner label="Generating insights..." style={{ marginTop: '100px' }} />;
-
   return (
     <div className={styles.root}>
       <div>
@@ -95,41 +93,45 @@ export const Dashboard: React.FC = () => {
         </Subtitle2>
       </div>
 
-      <div className={styles.statsGrid}>
-        <Card className={styles.statCard} appearance="subtle">
-          <div className={`${styles.iconArea} ${styles.navyIcon}`}>
-            <Building24Regular />
-          </div>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Total Hotels</Text>
-          <LargeTitle>{stats?.totalHotels || 0}</LargeTitle>
-        </Card>
+      {loading ? (
+        <DashboardSkeleton />
+      ) : (
+        <div className={styles.statsGrid}>
+          <Card className={styles.statCard} appearance="subtle">
+            <div className={`${styles.iconArea} ${styles.navyIcon}`}>
+              <Building24Regular />
+            </div>
+            <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Total Hotels</Text>
+            <LargeTitle>{stats?.totalHotels || 0}</LargeTitle>
+          </Card>
 
-        <Card className={styles.statCard} appearance="subtle">
-          <div className={`${styles.iconArea} ${styles.goldIcon}`}>
-            <CalendarCheckmark24Regular />
-          </div>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Bookings Made</Text>
-          <LargeTitle>{stats?.totalBookings || 0}</LargeTitle>
-        </Card>
+          <Card className={styles.statCard} appearance="subtle">
+            <div className={`${styles.iconArea} ${styles.goldIcon}`}>
+              <CalendarCheckmark24Regular />
+            </div>
+            <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Bookings Made</Text>
+            <LargeTitle>{stats?.totalBookings || 0}</LargeTitle>
+          </Card>
 
-        <Card className={styles.statCard} appearance="subtle">
-          <div className={`${styles.iconArea} ${styles.navyIcon}`}>
-            <PersonAvailable24Regular />
-          </div>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Active Guests</Text>
-          <LargeTitle>{stats?.activeBookings || 0}</LargeTitle>
-        </Card>
+          <Card className={styles.statCard} appearance="subtle">
+            <div className={`${styles.iconArea} ${styles.navyIcon}`}>
+              <PersonAvailable24Regular />
+            </div>
+            <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Active Guests</Text>
+            <LargeTitle>{stats?.activeBookings || 0}</LargeTitle>
+          </Card>
 
-        <Card className={styles.statCard} appearance="subtle">
-          <div className={`${styles.iconArea} ${styles.goldIcon}`}>
-            <Money24Regular />
-          </div>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Total Revenue</Text>
-          <LargeTitle>
-            {stats?.totalRevenue ? `$ ${stats.totalRevenue.toLocaleString()}` : '$ 0'}
-          </LargeTitle>
-        </Card>
-      </div>
+          <Card className={styles.statCard} appearance="subtle">
+            <div className={`${styles.iconArea} ${styles.goldIcon}`}>
+              <Money24Regular />
+            </div>
+            <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Total Revenue</Text>
+            <LargeTitle>
+              {stats?.totalRevenue ? `$ ${stats.totalRevenue.toLocaleString()}` : '$ 0'}
+            </LargeTitle>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };

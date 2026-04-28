@@ -4,7 +4,6 @@ import {
   shorthands, 
   Title1, 
   Subtitle2, 
-  Spinner,
   tokens,
   Text,
   Badge,
@@ -20,6 +19,7 @@ import {
 } from '@fluentui/react-icons';
 import { hotelService } from '../services/api';
 import { BookingModal } from '../components/BookingModal';
+import { RoomsPageSkeleton } from '../components/PageSkeletons';
 
 const useStyles = makeStyles({
   root: {
@@ -224,8 +224,6 @@ export const RoomManagement: React.FC = () => {
     }
   };
 
-  if (loading) return <Spinner label="Checking availability in real time..." style={{ marginTop: '100px' }} />;
-
   return (
     <div className={styles.root}>
       <div>
@@ -235,101 +233,107 @@ export const RoomManagement: React.FC = () => {
         </Subtitle2>
       </div>
 
-      {/* Barra de Filtros Reformulada */}
-      <div className={styles.filterBar}>
-        <div className={styles.filterItem}>
-          <Label weight="semibold">Check-In</Label>
-          <Input type="date" value={checkIn} onChange={(_, d) => handleCheckInChange(d.value)} />
-        </div>
+      {loading ? (
+        <RoomsPageSkeleton />
+      ) : (
+        <>
+          {/* Barra de Filtros Reformulada */}
+          <div className={styles.filterBar}>
+            <div className={styles.filterItem}>
+              <Label weight="semibold">Check-In</Label>
+              <Input type="date" value={checkIn} onChange={(_, d) => handleCheckInChange(d.value)} />
+            </div>
 
-        <div className={styles.filterItem}>
-          <Label weight="semibold">Check-Out</Label>
-          <Input type="date" value={checkOut} onChange={(_, d) => handleCheckOutChange(d.value)} />
-        </div>
+            <div className={styles.filterItem}>
+              <Label weight="semibold">Check-Out</Label>
+              <Input type="date" value={checkOut} onChange={(_, d) => handleCheckOutChange(d.value)} />
+            </div>
 
-        <div className={styles.filterItem}>
-          <Label weight="semibold">Hotel</Label>
-          <Select value={filterHotel} onChange={(_, d) => setFilterHotel(d.value)}>
-            <option value="0">All Hotels</option>
-            {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
-          </Select>
-        </div>
+            <div className={styles.filterItem}>
+              <Label weight="semibold">Hotel</Label>
+              <Select value={filterHotel} onChange={(_, d) => setFilterHotel(d.value)}>
+                <option value="0">All Hotels</option>
+                {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+              </Select>
+            </div>
 
-        <div className={styles.filterItem}>
-          <Label weight="semibold">Rating</Label>
-          <Select value={filterStars} onChange={(_, d) => setFilterStars(d.value)}>
-            <option value="0">Any Star</option>
-            <option value="4">4+ Stars</option>
-            <option value="5">5 Stars Only</option>
-          </Select>
-        </div>
+            <div className={styles.filterItem}>
+              <Label weight="semibold">Rating</Label>
+              <Select value={filterStars} onChange={(_, d) => setFilterStars(d.value)}>
+                <option value="0">Any Star</option>
+                <option value="4">4+ Stars</option>
+                <option value="5">5 Stars Only</option>
+              </Select>
+            </div>
 
-        <div className={styles.filterItem}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Label weight="semibold">Max Price</Label>
-            <Text size={200} weight="bold">$ {maxPrice}</Text>
-          </div>
-          <Slider min={200} max={5000} step={100} value={maxPrice} onChange={(_, d) => setMaxPrice(d.value)} />
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <Text weight="semibold" size={400}>{filteredRooms.length} options available</Text>
-        {(!checkIn || !checkOut) && (
-          <Badge appearance="outline" color="warning">Select dates to filter real availability</Badge>
-        )}
-      </div>
-
-      {/* Grid de Quartos */}
-      <div className={styles.roomGrid}>
-        {filteredRooms.map(room => (
-          <div key={room.id} className={styles.roomCard}>
-            <div className={`${styles.statusBar} ${getStatusClass(room.status)}`} />
-            <div className={styles.cardContent}>
-              <div className={styles.cardHeader}>
-                <div>
-                  <Text weight="bold" size={400}>{room.title}</Text>
-                  <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
-                    {[...Array(room.hotelStars)].map((_, i) => (
-                      <Star24Filled key={i} className={styles.goldStar} style={{ fontSize: '12px' }} />
-                    ))}
-                  </div>
-                </div>
-                <Badge appearance="tint" color="success">Free</Badge>
+            <div className={styles.filterItem}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Label weight="semibold">Max Price</Label>
+                <Text size={200} weight="bold">$ {maxPrice}</Text>
               </div>
-              
-              <Text size={200} color={tokens.colorNeutralForeground3}>{room.roomType}</Text>
-              
-              <div style={{ flexGrow: 1 }} />
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '12px' }}>
-                <div>
-                  <Text size={100} block color={tokens.colorNeutralForeground4}>Daily Rate</Text>
-                  <Text weight="bold" size={500}>$ {room.pricePerNight.toLocaleString()}</Text>
-                </div>
-                <Button 
-                  appearance="primary" 
-                  icon={<ArrowRight24Regular />}
-                  disabled={!checkIn || !checkOut}
-                  onClick={() => {
-                    setSelectedRoom(room);
-                    setIsModalOpen(true);
-                  }}
-                >
-                  Book Now
-                </Button>
-              </div>
+              <Slider min={200} max={5000} step={100} value={maxPrice} onChange={(_, d) => setMaxPrice(d.value)} />
             </div>
           </div>
-        ))}
-      </div>
 
-      <BookingModal 
-        isOpen={isModalOpen} 
-        room={selectedRoom} 
-        initialDates={{ checkIn, checkOut }}
-        onClose={handleBookingClose} 
-      />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Text weight="semibold" size={400}>{filteredRooms.length} options available</Text>
+            {(!checkIn || !checkOut) && (
+              <Badge appearance="outline" color="warning">Select dates to filter real availability</Badge>
+            )}
+          </div>
+
+          {/* Grid de Quartos */}
+          <div className={styles.roomGrid}>
+            {filteredRooms.map(room => (
+              <div key={room.id} className={styles.roomCard}>
+                <div className={`${styles.statusBar} ${getStatusClass(room.status)}`} />
+                <div className={styles.cardContent}>
+                  <div className={styles.cardHeader}>
+                    <div>
+                      <Text weight="bold" size={400}>{room.title}</Text>
+                      <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
+                        {[...Array(room.hotelStars)].map((_, i) => (
+                          <Star24Filled key={i} className={styles.goldStar} style={{ fontSize: '12px' }} />
+                        ))}
+                      </div>
+                    </div>
+                    <Badge appearance="tint" color="success">Free</Badge>
+                  </div>
+                  
+                  <Text size={200} color={tokens.colorNeutralForeground3}>{room.roomType}</Text>
+                  
+                  <div style={{ flexGrow: 1 }} />
+                  
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '12px' }}>
+                    <div>
+                      <Text size={100} block color={tokens.colorNeutralForeground4}>Daily Rate</Text>
+                      <Text weight="bold" size={500}>$ {room.pricePerNight.toLocaleString()}</Text>
+                    </div>
+                    <Button 
+                      appearance="primary" 
+                      icon={<ArrowRight24Regular />}
+                      disabled={!checkIn || !checkOut}
+                      onClick={() => {
+                        setSelectedRoom(room);
+                        setIsModalOpen(true);
+                      }}
+                    >
+                      Book Now
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <BookingModal 
+            isOpen={isModalOpen} 
+            room={selectedRoom} 
+            initialDates={{ checkIn, checkOut }}
+            onClose={handleBookingClose} 
+          />
+        </>
+      )}
     </div>
   );
 };
