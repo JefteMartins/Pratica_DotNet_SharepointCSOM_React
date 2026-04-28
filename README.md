@@ -88,8 +88,8 @@ VITE_API_URL=https://localhost:7233/api
 ---
 
 ## 📖 Documentation
--   Detailed Lab techniques: [LabDocumentation.md](./LabDocumentation.md)
--   Project Logs: [log.md](./log.md)
+-   Detailed Lab techniques: [LabDocumentation.md](./Hotel/LabDocumentation.md)
+-   Project Logs: [log.md](.//Hotel/log.md)
 
 ---
 
