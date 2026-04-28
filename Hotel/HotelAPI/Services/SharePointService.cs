@@ -23,18 +23,32 @@ public class SharePointService : BaseSharePointService, ISharePointService
             item => item["Title"],
             item => item["Location"],
             item => item["Stars"],
-            item => item["Description"]
+            item => item["Description"],
+            item => item["ImageUrl"]
         ));
         
         await context.ExecuteQueryRetryAsync();
         
-        return items.AsEnumerable().Select(i => new HotelModel
-        {
-            Id = i.Id,
-            Name = i["Title"]?.ToString() ?? "",
-            Location = i["Location"]?.ToString() ?? "",
-            Stars = i["Stars"] != null ? Convert.ToInt32(i["Stars"]) : 0,
-            Description = i["Description"]?.ToString() ?? ""
+        return items.AsEnumerable().Select(i => {
+            var imageUrl = "";
+            if (i["ImageUrl"] is FieldUrlValue urlValue)
+            {
+                imageUrl = urlValue.Url;
+            }
+            else if (i["ImageUrl"] != null)
+            {
+                imageUrl = i["ImageUrl"].ToString();
+            }
+
+            return new HotelModel
+            {
+                Id = i.Id,
+                Name = i["Title"]?.ToString() ?? "",
+                Location = i["Location"]?.ToString() ?? "",
+                Stars = i["Stars"] != null ? Convert.ToInt32(i["Stars"]) : 0,
+                Description = i["Description"]?.ToString() ?? "",
+                ImageUrl = imageUrl
+            };
         }).ToList();
     }
 
@@ -133,38 +147,80 @@ public class SharePointService : BaseSharePointService, ISharePointService
 
     public async Task<List<BookingModel>> GetBookingsAsync()
     {
+        var hotels = await GetHotelsAsync();
+        var rooms = await GetAllRoomsAsync();
+
         using var context = await _contextFactory.CreateContextAsync();
         var list = context.Web.Lists.GetByTitle("Bookings");
         var items = list.GetItems(CamlQuery.CreateAllItemsQuery());
         
-        context.Load(items);
+        context.Load(items, collection => collection.Include(
+            item => item.Id,
+            item => item["Title"],
+            item => item["RoomLookup"],
+            item => item["GuestName"],
+            item => item["CheckIn"],
+            item => item["CheckOut"],
+            item => item["TotalAmount"],
+            item => item["Status"]
+        ));
+        
         await context.ExecuteQueryRetryAsync();
         
-        return items.AsEnumerable().Select(i => new BookingModel
-        {
-            Id = i.Id,
-            BookingCode = i["Title"]?.ToString() ?? "",
-            RoomId = i["RoomLookup"] != null ? ((FieldLookupValue)i["RoomLookup"]).LookupId : 0,
-            GuestName = i["GuestName"]?.ToString() ?? "",
-            CheckIn = Convert.ToDateTime(i["CheckIn"]),
-            CheckOut = Convert.ToDateTime(i["CheckOut"]),
-            TotalAmount = Convert.ToDecimal(i["TotalAmount"]),
-            Status = i["Status"]?.ToString() ?? ""
+        return items.AsEnumerable().Select(i => {
+            var roomId = 0;
+            if (i["RoomLookup"] is FieldLookupValue lv) roomId = lv.LookupId;
+            else if (i["RoomLookup"] is FieldLookupValue[] lvs && lvs.Length > 0) roomId = lvs[0].LookupId;
+
+            var room = rooms.FirstOrDefault(r => r.Id == roomId);
+            var hotel = room != null ? hotels.FirstOrDefault(h => h.Id == room.HotelId) : null;
+
+            return new BookingModel
+            {
+                Id = i.Id,
+                BookingCode = i["Title"]?.ToString() ?? "",
+                RoomId = roomId,
+                RoomName = room?.Title ?? "Quarto não encontrado",
+                HotelName = hotel?.Name ?? "Hotel não encontrado",
+                GuestName = i["GuestName"]?.ToString() ?? "",
+                CheckIn = Convert.ToDateTime(i["CheckIn"]),
+                CheckOut = Convert.ToDateTime(i["CheckOut"]),
+                TotalAmount = Convert.ToDecimal(i["TotalAmount"]),
+                Status = i["Status"]?.ToString() ?? ""
+            };
         }).ToList();
     }
 
     public async Task<object> GetDashboardStatsAsync()
     {
-        var rooms = await GetAllRoomsAsync();
-        var bookings = await GetBookingsAsync();
+        using var context = await _contextFactory.CreateContextAsync();
         
+        var hotelsList = context.Web.Lists.GetByTitle("Hotels");
+        var bookingsList = context.Web.Lists.GetByTitle("Bookings");
+
+        var hotelsItems = hotelsList.GetItems(CamlQuery.CreateAllItemsQuery());
+        var bookingsItems = bookingsList.GetItems(CamlQuery.CreateAllItemsQuery());
+
+        context.Load(hotelsItems);
+        context.Load(bookingsItems, coll => coll.Include(
+            item => item["TotalAmount"],
+            item => item["Status"]
+        ));
+
+        await context.ExecuteQueryRetryAsync();
+
+        var totalRevenue = bookingsItems.AsEnumerable()
+            .Sum(i => i["TotalAmount"] != null ? Convert.ToDecimal(i["TotalAmount"]) : 0);
+        
+        var activeBookings = bookingsItems.AsEnumerable()
+            .Count(i => i["Status"]?.ToString() == "CheckedIn");
+
         return new
         {
-            TotalRooms = rooms.Count,
-            OccupiedRooms = rooms.Count(r => r.Status == "Occupied"),
-            AvailableRooms = rooms.Count(r => r.Status == "Available"),
-            TotalRevenue = bookings.Sum(b => b.TotalAmount),
-            RecentBookingsCount = bookings.Count(b => b.CheckIn >= DateTime.Now.AddDays(-7))
+            TotalHotels = hotelsItems.Count,
+            TotalBookings = bookingsItems.Count,
+            TotalRevenue = totalRevenue,
+            ActiveBookings = activeBookings
         };
     }
 

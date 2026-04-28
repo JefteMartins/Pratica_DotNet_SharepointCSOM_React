@@ -75,12 +75,12 @@ export const WritingLab: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
         <Title2>Writing Lab: Batching & Optimization</Title2>
-        <Text block>Compare o impacto de realizar várias chamadas de rede contra o agrupamento de operações em um único lote.</Text>
+        <Text block>Compare the impact of multiple network calls against grouping operations into a single batch.</Text>
       </div>
 
       <Card style={{ maxWidth: '400px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
-          <Label htmlFor="item-count">Quantidade de itens para criar:</Label>
+          <Label htmlFor="item-count">Number of items to create:</Label>
           <Input 
             id="item-count" 
             type="number" 
@@ -96,7 +96,7 @@ export const WritingLab: React.FC = () => {
         <Card>
           <CardHeader 
             header={<Subtitle1>Naive Loop (One-by-One)</Subtitle1>}
-            description="Executa ExecuteQuery() para cada item."
+            description="Executes ExecuteQuery() for each item."
           />
           <div style={{ marginBottom: '10px' }}>
             <Button 
@@ -106,29 +106,29 @@ export const WritingLab: React.FC = () => {
               disabled={isLoading}
               style={{ color: tokens.colorPaletteRedForeground1, borderColor: tokens.colorPaletteRedBorder1 }}
             >
-              Executar Sequencial
+              Run Sequential
             </Button>
           </div>
 
           {sequentialResult && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <Badge appearance="filled" color="danger" icon={<Timer24Regular />}>
-                Tempo Total: {sequentialResult.time}ms
+                Total Time: {sequentialResult.time}ms
               </Badge>
               <Badge appearance="outline" color="danger">
-                Média: {sequentialResult.avg}ms / item
+                Average: {sequentialResult.avg}ms / item
               </Badge>
             </div>
           )}
 
-          {isLoading && currentMode === 'Sequential' && <Spinner label="Criando itens..." />}
+          {isLoading && currentMode === 'Sequential' && <Spinner label="Creating items..." />}
         </Card>
 
         {/* Lado Direito: Batched */}
         <Card>
           <CardHeader 
             header={<Subtitle1>CSOM Batching</Subtitle1>}
-            description="Agrupa operações em uma única query."
+            description="Groups operations in a single query."
           />
           <div style={{ marginBottom: '10px' }}>
             <Button 
@@ -138,22 +138,22 @@ export const WritingLab: React.FC = () => {
               disabled={isLoading} 
               style={{ backgroundColor: tokens.colorPaletteGreenBackground3 }}
             >
-              Executar Batched
+              Run Batched
             </Button>
           </div>
 
           {batchedResult && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
               <Badge appearance="filled" color="success" icon={<Flash24Regular />}>
-                Tempo Total: {batchedResult.time}ms
+                Total Time: {batchedResult.time}ms
               </Badge>
               <Badge appearance="outline" color="success">
-                Média: {batchedResult.avg}ms / item
+                Average: {batchedResult.avg}ms / item
               </Badge>
             </div>
           )}
 
-          {isLoading && currentMode === 'Batched' && <Spinner label="Criando lote..." />}
+          {isLoading && currentMode === 'Batched' && <Spinner label="Creating batch..." />}
         </Card>
 
       </div>
@@ -161,7 +161,7 @@ export const WritingLab: React.FC = () => {
       {sequentialResult && batchedResult && (
         <Card appearance="subtle" style={{ backgroundColor: tokens.colorBrandBackground2 }}>
           <Text weight="bold">
-            Resultado: A operação Batched foi {Math.round(sequentialResult.time / batchedResult.time)}x mais rápida!
+            Result: The Batched operation was {Math.round(sequentialResult.time / batchedResult.time)}x faster!
           </Text>
         </Card>
       )}

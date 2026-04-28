@@ -76,7 +76,7 @@ export const Dashboard: React.FC = () => {
         const response = await hotelService.getDashboardStats();
         setStats(response.data);
       } catch (error) {
-        console.error("Erro ao buscar estatísticas:", error);
+        console.error("Error fetching statistics:", error);
       } finally {
         setLoading(false);
       }
@@ -84,14 +84,14 @@ export const Dashboard: React.FC = () => {
     fetchStats();
   }, []);
 
-  if (loading) return <Spinner label="Gerando insights..." style={{ marginTop: '100px' }} />;
+  if (loading) return <Spinner label="Generating insights..." style={{ marginTop: '100px' }} />;
 
   return (
     <div className={styles.root}>
       <div>
-        <Title1>Painel de Gestão</Title1>
+        <Title1>Management Dashboard</Title1>
         <Subtitle2 block style={{ color: tokens.colorNeutralForeground4 }}>
-          Visão geral da performance do grupo hoteleiro em tempo real.
+          Overview of the hotel group performance in real time.
         </Subtitle2>
       </div>
 
@@ -100,7 +100,7 @@ export const Dashboard: React.FC = () => {
           <div className={`${styles.iconArea} ${styles.navyIcon}`}>
             <Building24Regular />
           </div>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Total de Hotéis</Text>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Total Hotels</Text>
           <LargeTitle>{stats?.totalHotels || 0}</LargeTitle>
         </Card>
 
@@ -108,7 +108,7 @@ export const Dashboard: React.FC = () => {
           <div className={`${styles.iconArea} ${styles.goldIcon}`}>
             <CalendarCheckmark24Regular />
           </div>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Reservas Realizadas</Text>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Bookings Made</Text>
           <LargeTitle>{stats?.totalBookings || 0}</LargeTitle>
         </Card>
 
@@ -116,7 +116,7 @@ export const Dashboard: React.FC = () => {
           <div className={`${styles.iconArea} ${styles.navyIcon}`}>
             <PersonAvailable24Regular />
           </div>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Hóspedes Ativos</Text>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Active Guests</Text>
           <LargeTitle>{stats?.activeBookings || 0}</LargeTitle>
         </Card>
 
@@ -124,9 +124,9 @@ export const Dashboard: React.FC = () => {
           <div className={`${styles.iconArea} ${styles.goldIcon}`}>
             <Money24Regular />
           </div>
-          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Receita Total</Text>
+          <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>Total Revenue</Text>
           <LargeTitle>
-            {stats?.totalRevenue ? `R$ ${stats.totalRevenue.toLocaleString()}` : 'R$ 0'}
+            {stats?.totalRevenue ? `$ ${stats.totalRevenue.toLocaleString()}` : '$ 0'}
           </LargeTitle>
         </Card>
       </div>

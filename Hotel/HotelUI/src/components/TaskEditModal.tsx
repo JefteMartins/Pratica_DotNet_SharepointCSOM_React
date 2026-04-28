@@ -53,8 +53,8 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
       });
       onClose(true);
     } catch (error) {
-      console.error("Erro ao atualizar tarefa", error);
-      alert("Erro ao salvar alterações no SharePoint.");
+      console.error("Error updating task", error);
+      alert("Error saving changes to SharePoint.");
     } finally {
       setIsLoading(false);
     }
@@ -64,11 +64,11 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
     <Dialog open={isOpen} onOpenChange={() => onClose(false)}>
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>Editar Tarefa (ID: {formData.id})</DialogTitle>
+          <DialogTitle>Edit Task (ID: {formData.id})</DialogTitle>
           <DialogContent style={{ display: 'flex', flexDirection: 'column', gap: '15px', paddingTop: '20px' }}>
             
             <div>
-              <Label htmlFor="edit-title" required>Título:</Label>
+              <Label htmlFor="edit-title" required>Title:</Label>
               <Input 
                 id="edit-title" 
                 style={{ width: '100%' }}
@@ -93,7 +93,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
             </div>
 
             <div>
-              <Label htmlFor="edit-desc">Descrição:</Label>
+              <Label htmlFor="edit-desc">Description:</Label>
               <Textarea 
                 id="edit-desc" 
                 style={{ width: '100%' }}
@@ -103,7 +103,7 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
             </div>
 
             <div>
-              <Label htmlFor="edit-date">Data de Vencimento:</Label>
+              <Label htmlFor="edit-date">Due Date:</Label>
               <Input 
                 id="edit-date" 
                 type="date"
@@ -116,10 +116,10 @@ export const TaskEditModal: React.FC<TaskEditModalProps> = ({ task, isOpen, onCl
           </DialogContent>
           <DialogActions>
             <Button appearance="secondary" onClick={() => onClose(false)} disabled={isSaving}>
-              Cancelar
+              Cancel
             </Button>
             <Button appearance="primary" onClick={handleSave} disabled={isSaving}>
-              {isSaving ? <Spinner size="tiny" label="Salvando..." /> : "Salvar Alterações"}
+              {isSaving ? <Spinner size="tiny" label="Saving..." /> : "Save Changes"}
             </Button>
           </DialogActions>
         </DialogBody>

@@ -224,14 +224,14 @@ export const RoomManagement: React.FC = () => {
     }
   };
 
-  if (loading) return <Spinner label="Verificando disponibilidade em tempo real..." style={{ marginTop: '100px' }} />;
+  if (loading) return <Spinner label="Checking availability in real time..." style={{ marginTop: '100px' }} />;
 
   return (
     <div className={styles.root}>
       <div>
-        <Title1>Busca de Acomodações</Title1>
+        <Title1>Accommodation Search</Title1>
         <Subtitle2 block style={{ color: tokens.colorNeutralForeground4 }}>
-          Selecione as datas para encontrar os quartos disponíveis em nossa rede.
+          Select dates to find available rooms in our network.
         </Subtitle2>
       </div>
 
@@ -250,33 +250,33 @@ export const RoomManagement: React.FC = () => {
         <div className={styles.filterItem}>
           <Label weight="semibold">Hotel</Label>
           <Select value={filterHotel} onChange={(_, d) => setFilterHotel(d.value)}>
-            <option value="0">Todos os Hotéis</option>
+            <option value="0">All Hotels</option>
             {hotels.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
           </Select>
         </div>
 
         <div className={styles.filterItem}>
-          <Label weight="semibold">Classificação</Label>
+          <Label weight="semibold">Rating</Label>
           <Select value={filterStars} onChange={(_, d) => setFilterStars(d.value)}>
-            <option value="0">Qualquer Estrela</option>
-            <option value="4">4+ Estrelas</option>
-            <option value="5">Apenas 5 Estrelas</option>
+            <option value="0">Any Star</option>
+            <option value="4">4+ Stars</option>
+            <option value="5">5 Stars Only</option>
           </Select>
         </div>
 
         <div className={styles.filterItem}>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Label weight="semibold">Preço Máx</Label>
-            <Text size={200} weight="bold">R$ {maxPrice}</Text>
+            <Label weight="semibold">Max Price</Label>
+            <Text size={200} weight="bold">$ {maxPrice}</Text>
           </div>
           <Slider min={200} max={5000} step={100} value={maxPrice} onChange={(_, d) => setMaxPrice(d.value)} />
         </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <Text weight="semibold" size={400}>{filteredRooms.length} opções disponíveis</Text>
+        <Text weight="semibold" size={400}>{filteredRooms.length} options available</Text>
         {(!checkIn || !checkOut) && (
-          <Badge appearance="outline" color="warning">Selecione datas para filtrar disponibilidade real</Badge>
+          <Badge appearance="outline" color="warning">Select dates to filter real availability</Badge>
         )}
       </div>
 
@@ -295,7 +295,7 @@ export const RoomManagement: React.FC = () => {
                     ))}
                   </div>
                 </div>
-                <Badge appearance="tint" color="success">Livre</Badge>
+                <Badge appearance="tint" color="success">Free</Badge>
               </div>
               
               <Text size={200} color={tokens.colorNeutralForeground3}>{room.roomType}</Text>
@@ -304,8 +304,8 @@ export const RoomManagement: React.FC = () => {
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '12px' }}>
                 <div>
-                  <Text size={100} block color={tokens.colorNeutralForeground4}>Diária</Text>
-                  <Text weight="bold" size={500}>R$ {room.pricePerNight.toLocaleString()}</Text>
+                  <Text size={100} block color={tokens.colorNeutralForeground4}>Daily Rate</Text>
+                  <Text weight="bold" size={500}>$ {room.pricePerNight.toLocaleString()}</Text>
                 </div>
                 <Button 
                   appearance="primary" 
@@ -316,7 +316,7 @@ export const RoomManagement: React.FC = () => {
                     setIsModalOpen(true);
                   }}
                 >
-                  Reservar
+                  Book Now
                 </Button>
               </div>
             </div>

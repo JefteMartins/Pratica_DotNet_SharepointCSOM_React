@@ -44,7 +44,7 @@ public class LabService : BaseSharePointService, ILabService
         {
             await retryPolicy.ExecuteAsync(async token =>
             {
-                using var context = await _contextFactory.CreateContextAsync();
+                using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
                 var listName = _config["SharePoint:LabListName"] ?? "Tasks";
                 var list = context.Web.Lists.GetByTitle(listName);
 
@@ -73,7 +73,7 @@ public class LabService : BaseSharePointService, ILabService
 
     public async Task<List<object>> GetTasksAsync()
     {
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
@@ -101,7 +101,7 @@ public class LabService : BaseSharePointService, ILabService
 
     public async Task SeedDataAsync(int count)
     {
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
@@ -129,7 +129,7 @@ public class LabService : BaseSharePointService, ILabService
     public async Task<PagedResult> GetTasksPagedAsync(int pageSize, string? position)
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
@@ -169,7 +169,7 @@ public class LabService : BaseSharePointService, ILabService
     public async Task<StreamResult> GetTasksStreamAsync(int pageSize)
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
@@ -209,7 +209,7 @@ public class LabService : BaseSharePointService, ILabService
     public async Task<WritingResult> CreateItemsSequentialAsync(int count)
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
         
@@ -243,7 +243,7 @@ public class LabService : BaseSharePointService, ILabService
     public async Task<WritingResult> CreateItemsBatchedAsync(int count, int batchSize = 50)
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
@@ -279,7 +279,7 @@ public class LabService : BaseSharePointService, ILabService
 
     public async Task<List<object>> SearchTasksAsync(SearchFilters filters)
     {
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
@@ -377,7 +377,7 @@ public class LabService : BaseSharePointService, ILabService
 
     public async Task<List<object>> GetFieldMappingsAsync()
     {
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
         var fields = list.Fields;
@@ -398,7 +398,7 @@ public class LabService : BaseSharePointService, ILabService
     public async Task<DeletionResult> DeleteItemsSequentialAsync(int count)
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
@@ -420,7 +420,7 @@ public class LabService : BaseSharePointService, ILabService
     public async Task<DeletionResult> DeleteItemsBatchedAsync(int count, int batchSize = 50)
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
@@ -446,7 +446,7 @@ public class LabService : BaseSharePointService, ILabService
     public async Task<DeletionResult> DeleteTasksByFilterAsync(SearchFilters filters)
     {
         var watch = System.Diagnostics.Stopwatch.StartNew();
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 
@@ -508,7 +508,7 @@ public class LabService : BaseSharePointService, ILabService
 
     public async Task<bool> UpdateTaskAsync(TaskUpdateModel task)
     {
-        using var context = await _contextFactory.CreateContextAsync();
+        using var context = await _contextFactory.CreateContextAsync(_config["SharePoint:SiteLabUrl"]);
         var listName = _config["SharePoint:LabListName"] ?? "Tasks";
         var list = context.Web.Lists.GetByTitle(listName);
 

@@ -111,7 +111,7 @@ export const ReadingLab: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
         <Title2>The Reading Lab: Large Data Volumes</Title2>
-        <Text block>Explore diferentes técnicas para ler dados do SharePoint, focando em performance e contorno do limite de 5.000 itens.</Text>
+        <Text block>Explore different techniques to read data from SharePoint, focusing on performance and bypassing the 5,000 item limit.</Text>
       </div>
 
       <div className={styles.grid}>
@@ -120,36 +120,36 @@ export const ReadingLab: React.FC = () => {
         <Card className={styles.card}>
           <CardHeader 
             header={<Subtitle1>A: ListItemCollectionPosition</Subtitle1>}
-            description="Paginação clássica baseada em tokens de posição."
+            description="Classic pagination based on position tokens."
           />
           <div style={{ marginBottom: '10px', display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
             <Button appearance="primary" onClick={() => fetchClassic(false)} disabled={isClassicLoading}>
-              Carregar Início
+              Load Start
             </Button>
             <Button 
               icon={<ArrowRight24Regular />} 
               disabled={!nextPos || isClassicLoading} 
               onClick={() => fetchClassic(true)}
             >
-              Próxima
+              Next
             </Button>
           </div>
 
           {classicTime && (
             <Badge appearance="filled" color="informative" icon={<Timer24Regular />}>
-              Tempo: {classicTime}ms
+              Time: {classicTime}ms
             </Badge>
           )}
 
           <Divider style={{ margin: '15px 0' }} />
 
-          {isClassicLoading ? <Spinner label="Consultando via CSOM..." /> : (
+          {isClassicLoading ? <Spinner label="Querying via CSOM..." /> : (
             <div style={{ overflowX: 'auto' }}>
               <Table size="extra-small">
                 <TableHeader>
                   <TableRow>
                     <TableHeaderCell>ID</TableHeaderCell>
-                    <TableHeaderCell>Título</TableHeaderCell>
+                    <TableHeaderCell>Title</TableHeaderCell>
                     <TableHeaderCell>Status</TableHeaderCell>
                   </TableRow>
                 </TableHeader>
@@ -179,29 +179,29 @@ export const ReadingLab: React.FC = () => {
         <Card className={styles.card}>
           <CardHeader 
             header={<Subtitle1>B: RenderListDataAsStream</Subtitle1>}
-            description="API moderna e performática."
+            description="Modern and high-performance API."
           />
           <div style={{ marginBottom: '10px' }}>
             <Button appearance="primary" icon={<Flash24Regular />} onClick={fetchStream} disabled={isStreamLoading} style={{ backgroundColor: tokens.colorPaletteGreenBackground3 }}>
-              Executar Stream
+              Execute Stream
             </Button>
           </div>
 
           {streamTime && (
             <Badge appearance="filled" color="success" icon={<Timer24Regular />}>
-              Tempo: {streamTime}ms
+              Time: {streamTime}ms
             </Badge>
           )}
 
           <Divider style={{ margin: '15px 0' }} />
 
-          {isStreamLoading ? <Spinner label="Consultando via Stream API..." /> : (
+          {isStreamLoading ? <Spinner label="Querying via Stream API..." /> : (
             <div style={{ overflowX: 'auto' }}>
               <Table size="extra-small">
                 <TableHeader>
                   <TableRow>
                     <TableHeaderCell>ID</TableHeaderCell>
-                    <TableHeaderCell>Título</TableHeaderCell>
+                    <TableHeaderCell>Title</TableHeaderCell>
                     <TableHeaderCell>Status</TableHeaderCell>
                   </TableRow>
                 </TableHeader>

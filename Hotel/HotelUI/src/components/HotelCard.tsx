@@ -79,7 +79,11 @@ export const HotelCard: React.FC<HotelCardProps> = ({
   return (
     <Card className={styles.card} appearance="subtle">
       <CardPreview className={styles.preview}>
-        <img src={imageUrl} alt={name} className={styles.image} />
+        <img 
+          src={imageUrl || 'https://placehold.co/600x400?text=Hotel+Image+Not+Found'} 
+          alt={name} 
+          className={styles.image} 
+        />
       </CardPreview>
       
       <div className={styles.content}>
@@ -108,7 +112,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({
             iconPosition="after"
             onClick={onViewRooms}
           >
-            Ver Quartos
+            View Rooms
           </Button>
         </div>
       </div>

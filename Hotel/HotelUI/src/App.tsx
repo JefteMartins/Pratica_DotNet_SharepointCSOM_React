@@ -10,7 +10,6 @@ import {
   Home24Regular, 
   Building24Regular, 
   CalendarMonth24Regular, 
-  Settings24Regular,
   Flash24Regular
 } from '@fluentui/react-icons';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
@@ -31,6 +30,8 @@ const useStyles = makeStyles({
   },
   sidebar: {
     width: '280px',
+    minWidth: '280px',
+    flexShrink: 0,
     backgroundColor: '#001E42', // Navy Primário
     color: '#ffffff',
     display: 'flex',
@@ -71,6 +72,8 @@ const useStyles = makeStyles({
   },
   content: {
     flexGrow: 1,
+    minWidth: 0,
+    overflowX: 'auto',
     overflowY: 'auto',
     ...shorthands.padding('32px', '40px'),
   },
@@ -99,11 +102,10 @@ const Sidebar = () => {
       </div>
       <nav className={styles.nav}>
         <NavItem to="/" icon={Home24Regular} label="Dashboard" />
-        <NavItem to="/hotels" icon={Building24Regular} label="Hotéis" />
-        <NavItem to="/rooms" icon={Building24Regular} label="Quartos" />
-        <NavItem to="/bookings" icon={CalendarMonth24Regular} label="Reservas" />
+        <NavItem to="/hotels" icon={Building24Regular} label="Hotels" />
+        <NavItem to="/rooms" icon={Building24Regular} label="Rooms" />
+        <NavItem to="/bookings" icon={CalendarMonth24Regular} label="Bookings" />
         <NavItem to="/lab" icon={Flash24Regular} label="Technical Lab" />
-        <NavItem to="/settings" icon={Settings24Regular} label="Configurações" />
       </nav>
     </aside>
   );
@@ -124,7 +126,7 @@ function App() {
               <Route path="/rooms" element={<RoomManagement />} />
               <Route path="/bookings" element={<Bookings />} />
               <Route path="/lab/*" element={<LabDashboard />} />
-              <Route path="/settings" element={<div style={{ padding: '20px' }}><Title2>Configurações</Title2><Caption1>Em breve...</Caption1></div>} />
+              <Route path="/settings" element={<div style={{ padding: '20px' }}><Title2>Settings</Title2><Caption1>Coming soon...</Caption1></div>} />
             </Routes>
           </main>
         </div>

@@ -3,6 +3,7 @@ import {
   TabList, 
   Tab, 
   Title1, 
+  Title2,
   Text,
   LargeTitle,
   tokens,
@@ -11,6 +12,7 @@ import {
   MessageBarBody,
   Button,
   Spinner,
+  Divider,
   makeStyles,
   shorthands
 } from '@fluentui/react-components';
@@ -20,7 +22,7 @@ import { WritingLab } from '../components/WritingLab';
 import { ResilienceLab } from '../components/ResilienceLab';
 import { CustomSearchLab } from '../components/CustomSearchLab';
 import { DeletionLab } from '../components/DeletionLab';
-import { labService } from '../services/api';
+import api, { labService } from '../services/api';
 
 const useStyles = makeStyles({
   container: {
@@ -77,13 +79,13 @@ export const LabDashboard = () => {
 
   const handleSeed = async (count: number) => {
     setSeeding(true);
-    setStatus({ message: `Gerando ${count} tarefas no SharePoint...`, type: 'info' });
+    setStatus({ message: `Generating ${count} tasks in SharePoint...`, type: 'info' });
     try {
       await labService.seedData(count);
-      setStatus({ message: `Sucesso! ${count} tarefas foram criadas.`, type: 'success' });
+      setStatus({ message: `Success! ${count} tasks were created.`, type: 'success' });
     } catch (error) {
       console.error(error);
-      setStatus({ message: 'Falha ao injetar dados.', type: 'error' });
+      setStatus({ message: 'Failed to inject data.', type: 'error' });
     } finally {
       setSeeding(false);
     }
@@ -98,7 +100,7 @@ export const LabDashboard = () => {
             SharePoint CSOM <span style={{ fontWeight: tokens.fontWeightRegular }}>Performance Lab</span>
           </LargeTitle>
           <Text size={isMobile ? 300 : 400} style={{ color: tokens.colorNeutralForeground3 }}>
-            Ambiente de testes para técnicas avançadas de leitura e escrita em listas de grande volume.
+            Testing environment for advanced read and write techniques in high-volume lists.
           </Text>
         </header>
 
@@ -138,23 +140,49 @@ export const LabDashboard = () => {
           
           {selectedTab === 'data' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <Title1>Gerenciamento de Dados</Title1>
-              <Text>Para testar o Threshold e a performance de paginação, você precisa de uma massa de dados significativa.</Text>
+              <Title1>Data Management</Title1>
+              <Text>To test Threshold and paging performance, you need a significant mass of data.</Text>
               
+              <div style={{ backgroundColor: tokens.colorNeutralBackground2, padding: '15px', borderRadius: tokens.borderRadiusMedium }}>
+                <Title2 block style={{ marginBottom: '10px' }}>Infrastructure</Title2>
+                <Text block style={{ marginBottom: '10px' }}>Ensure the necessary lists are created in SharePoint before starting the tests.</Text>
+                <Button 
+                  disabled={seeding} 
+                  icon={<Database24Regular />}
+                  onClick={async () => {
+                    setSeeding(true);
+                    setStatus({ message: "Provisioning lists in SharePoint...", type: 'info' });
+                    try {
+                      await api.post('/admin/provision');
+                      setStatus({ message: "Lists provisioned successfully!", type: 'success' });
+                    } catch (e) {
+                      setStatus({ message: "Error provisioning lists.", type: 'error' });
+                    } finally {
+                      setSeeding(false);
+                    }
+                  }}
+                >
+                  Provision Lists (Tasks, etc)
+                </Button>
+              </div>
+
+              <Divider />
+
+              <Title2>Mass Injection</Title2>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '10px' }}>
                 <Button disabled={seeding} onClick={() => handleSeed(100)}>Seed 100</Button>
-                <Button disabled={seeding} onClick={() => handleSeed(1000)}>Seed 1.000</Button>
+                <Button disabled={seeding} onClick={() => handleSeed(1000)}>Seed 1,000</Button>
                 <Button 
                   disabled={seeding} 
                   appearance="primary" 
                   icon={seeding ? <Spinner size="tiny" /> : <ArrowSync24Regular />} 
                   onClick={() => handleSeed(5000)}
                 >
-                  Seed 5.000 (Threshold)
+                  Seed 5,000 (Threshold)
                 </Button>
               </div>
               
-              {seeding && <Spinner label="Gerando dados em lotes de 100 para evitar timeout..." />}
+              {seeding && <Spinner label="Processing..." />}
             </div>
           )}
         </main>

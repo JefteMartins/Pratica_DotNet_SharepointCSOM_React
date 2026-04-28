@@ -40,7 +40,7 @@ export const DeletionLab: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDeleteByFilter = async () => {
-    if (!window.confirm("Remover TODOS os itens correspondentes?")) return;
+    if (!window.confirm("Remove ALL matching items?")) return;
 
     setIsLoading(true);
     try {
@@ -54,7 +54,7 @@ export const DeletionLab: React.FC = () => {
       const { elapsedMs, count } = response.data;
       setResult({ time: elapsedMs, count });
     } catch (error) {
-      console.error("Erro na exclusão", error);
+      console.error("Error in deletion", error);
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +69,7 @@ export const DeletionLab: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
         <Title2>Deletion Lab: Bulk Cleanup</Title2>
-        <Text block>Remova itens em massa combinando <strong>CAML Queries</strong> com <strong>Batching</strong>.</Text>
+        <Text block>Remove items in bulk by combining <strong>CAML Queries</strong> with <strong>Batching</strong>.</Text>
       </div>
 
       <div className={styles.grid}>
@@ -77,13 +77,13 @@ export const DeletionLab: React.FC = () => {
         {/* Painel de Filtros */}
         <Card>
           <CardHeader 
-            header={<Subtitle1>Critérios</Subtitle1>}
+            header={<Subtitle1>Criteria</Subtitle1>}
             image={<Filter24Regular />}
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', padding: '10px' }}>
             
             <div>
-              <Label htmlFor="del-title">Título:</Label>
+              <Label htmlFor="del-title">Title:</Label>
               <Input 
                 id="del-title" 
                 style={{ width: '100%' }}
@@ -100,7 +100,7 @@ export const DeletionLab: React.FC = () => {
                 value={filters.status} 
                 onChange={(_, d) => setFilters({...filters, status: d.value})}
               >
-                <option value="">Todos</option>
+                <option value="">All</option>
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Done">Done</option>
@@ -116,25 +116,25 @@ export const DeletionLab: React.FC = () => {
                 disabled={isLoading}
                 style={{ backgroundColor: tokens.colorPaletteRedBackground3 }}
               >
-                Excluir
+                Delete
               </Button>
-              <Button onClick={clearFilters} disabled={isLoading}>Limpar</Button>
+              <Button onClick={clearFilters} disabled={isLoading}>Clear</Button>
             </div>
           </div>
         </Card>
 
         {/* Status */}
         <Card>
-          <CardHeader header={<Subtitle1>Métricas</Subtitle1>} />
+          <CardHeader header={<Subtitle1>Metrics</Subtitle1>} />
           
           <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', minHeight: '150px' }}>
             {isLoading ? (
-              <Spinner label="Deletando..." />
+              <Spinner label="Deleting..." />
             ) : result ? (
               <>
                 <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', justifyContent: 'center' }}>
                   <Badge appearance="filled" color="danger" size="extra-large" icon={<Delete24Regular />}>
-                    {result.count} Removidos
+                    {result.count} Removed
                   </Badge>
                   <Badge appearance="filled" color="important" size="extra-large" icon={<Timer24Regular />}>
                     {result.time}ms
@@ -144,7 +144,7 @@ export const DeletionLab: React.FC = () => {
             ) : (
               <div style={{ textAlign: 'center' }}>
                 <Warning24Regular style={{ fontSize: '48px', color: tokens.colorNeutralForeground4 }} />
-                <Text block italic>Aguardando critérios...</Text>
+                <Text block italic>Waiting for criteria...</Text>
               </div>
             )}
           </div>

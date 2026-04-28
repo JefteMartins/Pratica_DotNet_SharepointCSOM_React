@@ -6,7 +6,7 @@ namespace HotelAPI.Infrastructure;
 
 public interface ISharePointContextFactory
 {
-    Task<ClientContext> CreateContextAsync();
+    Task<ClientContext> CreateContextAsync(string? siteUrl = null);
 }
 
 public class SharePointContextFactory : ISharePointContextFactory
@@ -18,9 +18,9 @@ public class SharePointContextFactory : ISharePointContextFactory
         _config = config;
     }
 
-    public async Task<ClientContext> CreateContextAsync()
+    public async Task<ClientContext> CreateContextAsync(string? siteUrl = null)
     {
-        var siteUrl = _config["SharePoint:SiteUrl"]
+        var targetUrl = siteUrl ?? _config["SharePoint:SiteUrl"]
             ?? throw new Exception("SiteUrl não configurado");
 
         var clientId = _config["SharePoint:ClientId"]
@@ -47,6 +47,6 @@ public class SharePointContextFactory : ISharePointContextFactory
             tenantId
         );
 
-        return authManager.GetContext(siteUrl);
+        return authManager.GetContext(targetUrl);
     }
 }

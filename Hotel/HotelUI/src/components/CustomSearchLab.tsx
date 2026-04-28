@@ -105,7 +105,7 @@ export const CustomSearchLab: React.FC = () => {
     <div className={styles.container}>
       <div>
         <Title2>Custom Search Lab: CAML Mastery</Title2>
-        <Text block>Crie consultas complexas no servidor usando <strong>CAML</strong> dinâmico.</Text>
+        <Text block>Create complex server-side queries using dynamic <strong>CAML</strong>.</Text>
       </div>
 
       <div className={styles.grid}>
@@ -113,14 +113,14 @@ export const CustomSearchLab: React.FC = () => {
         {/* Painel de Filtros */}
         <Card className={styles.card}>
           <CardHeader 
-            header={<Subtitle1>Filtros</Subtitle1>}
+            header={<Subtitle1>Filters</Subtitle1>}
             // Fixed: icon slot is not valid in CardHeader, use image or remove
             image={<Filter24Regular />}
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', padding: '10px' }}>
             
             <div>
-              <Label htmlFor="search-title">Título:</Label>
+              <Label htmlFor="search-title">Title:</Label>
               <Input 
                 id="search-title" 
                 style={{ width: '100%' }}
@@ -137,7 +137,7 @@ export const CustomSearchLab: React.FC = () => {
                 value={filters.status} 
                 onChange={(_, d) => setFilters({...filters, status: d.value})}
               >
-                <option value="">Todos</option>
+                <option value="">All</option>
                 <option value="Pending">Pending</option>
                 <option value="In Progress">In Progress</option>
                 <option value="Done">Done</option>
@@ -147,10 +147,10 @@ export const CustomSearchLab: React.FC = () => {
 
             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <Button appearance="primary" icon={<Search24Regular />} onClick={handleSearch} disabled={isLoading}>
-                Pesquisar
+                Search
               </Button>
               <Button icon={<Delete24Regular />} onClick={clearFilters} disabled={isLoading}>
-                Limpar
+                Clear
               </Button>
             </div>
           </div>
@@ -159,17 +159,17 @@ export const CustomSearchLab: React.FC = () => {
         {/* Tabela de Resultados */}
         <Card className={styles.card}>
           <CardHeader 
-            header={<Subtitle1>Resultados ({results.length})</Subtitle1>}
-            description="Clique em uma linha para editar."
+            header={<Subtitle1>Results ({results.length})</Subtitle1>}
+            description="Click on a row to edit."
           />
           
-          {isLoading ? <Spinner label="Buscando..." /> : (
+          {isLoading ? <Spinner label="Searching..." /> : (
             <div style={{ overflowX: 'auto' }}>
               <Table size="extra-small">
                 <TableHeader>
                   <TableRow>
                     <TableHeaderCell>ID</TableHeaderCell>
-                    <TableHeaderCell>Título</TableHeaderCell>
+                    <TableHeaderCell>Title</TableHeaderCell>
                     <TableHeaderCell>Status</TableHeaderCell>
                   </TableRow>
                 </TableHeader>
@@ -191,7 +191,7 @@ export const CustomSearchLab: React.FC = () => {
                   )) : (
                     <TableRow>
                       <TableCell colSpan={3} style={{ textAlign: 'center', padding: '20px' }}>
-                        <Text italic>Nenhum resultado.</Text>
+                        <Text italic>No results found.</Text>
                       </TableCell>
                     </TableRow>
                   )}

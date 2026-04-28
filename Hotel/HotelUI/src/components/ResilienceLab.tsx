@@ -66,16 +66,16 @@ export const ResilienceLab: React.FC = () => {
     try {
       await labService.toggleStress(enabled);
       setStressEnabled(enabled);
-      addLog(`Modo Stress ${enabled ? 'ATIVADO' : 'DESATIVADO'}`, enabled ? 'warning' : 'info');
+      addLog(`Stress Mode ${enabled ? 'ENABLED' : 'DISABLED'}`, enabled ? 'warning' : 'info');
     } catch (error) {
       console.error(error);
-      addLog("Erro ao alterar modo stress", 'error');
+      addLog("Error changing stress mode", 'error');
     }
   };
 
   const runTest = async () => {
     setIsLoading(true);
-    addLog("Iniciando operação resiliente...", 'info');
+    addLog("Starting resilient operation...", 'info');
     
     try {
       const response = await labService.createResilient("Resilience Test");
@@ -85,10 +85,10 @@ export const ResilienceLab: React.FC = () => {
         setMetrics({ lastRetries: retries, lastTime: elapsedMs });
         addLog(`${message} (Retries: ${retries})`, retries > 0 ? 'warning' : 'success');
       } else {
-        addLog(`Falha: ${message}`, 'error');
+        addLog(`Failure: ${message}`, 'error');
       }
     } catch (error) {
-      addLog("Erro na requisição", 'error');
+      addLog("Request error", 'error');
     } finally {
       setIsLoading(false);
     }
@@ -98,7 +98,7 @@ export const ResilienceLab: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <div>
         <Title2>Resilience Lab: Throttling & Backoff</Title2>
-        <Text block>Lide com limites do SharePoint Online usando <strong>Polly</strong>.</Text>
+        <Text block>Handle SharePoint Online limits using <strong>Polly</strong>.</Text>
       </div>
 
       <div className={styles.grid}>
@@ -106,7 +106,7 @@ export const ResilienceLab: React.FC = () => {
         {/* Painel de Controle */}
         <Card>
           <CardHeader 
-            header={<Subtitle1>Controle</Subtitle1>}
+            header={<Subtitle1>Control</Subtitle1>}
           />
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', padding: '10px' }}>
@@ -127,17 +127,17 @@ export const ResilienceLab: React.FC = () => {
               onClick={runTest} 
               disabled={isLoading}
             >
-              Executar com Polly
+              Execute with Polly
             </Button>
           </div>
 
           {metrics && (
             <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
               <Badge appearance="outline" color={metrics.lastRetries > 0 ? "warning" : "success"}>
-                Retentativas: {metrics.lastRetries}
+                Retries: {metrics.lastRetries}
               </Badge>
               <Badge appearance="outline" color="informative">
-                Tempo: {metrics.lastTime}ms
+                Time: {metrics.lastTime}ms
               </Badge>
             </div>
           )}
@@ -148,7 +148,7 @@ export const ResilienceLab: React.FC = () => {
           <CardHeader header={<Subtitle1>Console</Subtitle1>} />
           <div className={styles.terminal}>
             {isLoading && <Spinner size="tiny" label="Backoff..." />}
-            {logs.length === 0 && <Text size={200} italic>Sem atividades.</Text>}
+            {logs.length === 0 && <Text size={200} italic>No activities.</Text>}
             {logs.map(log => (
               <div key={log.id} style={{ fontSize: '11px' }}>
                 <span style={{ color: tokens.colorNeutralForeground4 }}>[{log.timestamp}]</span>{' '}

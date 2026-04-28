@@ -7,47 +7,72 @@ namespace HotelAPI.Services;
 public class SharePointProvisioningService : ISharePointProvisioningService
 {
     private readonly ISharePointContextFactory _contextFactory;
+    private readonly IConfiguration _config;
 
-    public SharePointProvisioningService(ISharePointContextFactory contextFactory)
+    public SharePointProvisioningService(ISharePointContextFactory contextFactory, IConfiguration config)
     {
         _contextFactory = contextFactory;
+        _config = config;
     }
 
     public async Task ProvisionAsync()
     {
-        using var context = await _contextFactory.CreateContextAsync();
-        var web = context.Web;
-        
-        // 1. Lista: Hotels
-        var hotelsList = await EnsureListAsync(context, "Hotels", ListTemplateType.GenericList);
-        await EnsureFieldAsync(hotelsList, "Location", "Note");
-        await EnsureFieldAsync(hotelsList, "Stars", "Number");
-        await EnsureFieldAsync(hotelsList, "Description", "Note");
-        await EnsureFieldAsync(hotelsList, "ImageUrl", "URL");
+        // 1. Provisionar Site do Hotel
+        var hotelSiteUrl = _config["SharePoint:SiteUrl"];
+        using (var hotelContext = await _contextFactory.CreateContextAsync(hotelSiteUrl))
+        {
+            // 1.1 Lista: Hotels
+            var hotelsList = await EnsureListAsync(hotelContext, "Hotels", ListTemplateType.GenericList);
+            await EnsureFieldAsync(hotelsList, "Location", "Note");
+            await EnsureFieldAsync(hotelsList, "Stars", "Number");
+            await EnsureFieldAsync(hotelsList, "Description", "Note");
+            await EnsureFieldAsync(hotelsList, "ImageUrl", "URL");
 
-        // 2. Lista: Rooms
-        var roomsList = await EnsureListAsync(context, "Rooms", ListTemplateType.GenericList);
-        await EnsureChoiceFieldAsync(roomsList, "RoomType", new[] { "Standard", "Deluxe", "Suite", "Presidential" });
-        await EnsureFieldAsync(roomsList, "PricePerNight", "Currency");
-        await EnsureLookupFieldAsync(roomsList, "HotelLookup", hotelsList, "Title");
-        await EnsureChoiceFieldAsync(roomsList, "Status", new[] { "Available", "Occupied", "Maintenance", "Cleaning" });
+            // 1.2 Lista: Rooms
+            var roomsList = await EnsureListAsync(hotelContext, "Rooms", ListTemplateType.GenericList);
+            await EnsureChoiceFieldAsync(roomsList, "RoomType", new[] { "Standard", "Deluxe", "Suite", "Presidential" });
+            await EnsureFieldAsync(roomsList, "PricePerNight", "Currency");
+            await EnsureLookupFieldAsync(roomsList, "HotelLookup", hotelsList, "Title");
+            await EnsureChoiceFieldAsync(roomsList, "Status", new[] { "Available", "Occupied", "Maintenance", "Cleaning" });
 
-        // 3. Lista: Bookings
-        var bookingsList = await EnsureListAsync(context, "Bookings", ListTemplateType.GenericList);
-        await EnsureLookupFieldAsync(bookingsList, "RoomLookup", roomsList, "Title");
-        await EnsureFieldAsync(bookingsList, "GuestName", "Text");
-        await EnsureFieldAsync(bookingsList, "CheckIn", "DateTime");
-        await EnsureFieldAsync(bookingsList, "CheckOut", "DateTime");
-        await EnsureFieldAsync(bookingsList, "TotalAmount", "Currency");
-        await EnsureChoiceFieldAsync(bookingsList, "Status", new[] { "Confirmed", "Cancelled", "CheckedIn", "CheckedOut" });
+            // 1.3 Lista: Bookings
+            var bookingsList = await EnsureListAsync(hotelContext, "Bookings", ListTemplateType.GenericList);
+            await EnsureLookupFieldAsync(bookingsList, "RoomLookup", roomsList, "Title");
+            await EnsureFieldAsync(bookingsList, "GuestName", "Text");
+            await EnsureFieldAsync(bookingsList, "CheckIn", "DateTime");
+            await EnsureFieldAsync(bookingsList, "CheckOut", "DateTime");
+            await EnsureFieldAsync(bookingsList, "TotalAmount", "Currency");
+            await EnsureChoiceFieldAsync(bookingsList, "Status", new[] { "Confirmed", "Cancelled", "CheckedIn", "CheckedOut" });
+        }
+
+        // 2. Provisionar Site do Lab
+        var labSiteUrl = _config["SharePoint:SiteLabUrl"];
+        using (var labContext = await _contextFactory.CreateContextAsync(labSiteUrl))
+        {
+            var labListName = _config["SharePoint:LabListName"] ?? "Tasks";
+            var tasksList = await EnsureListAsync(labContext, labListName, ListTemplateType.GenericList);
+            await EnsureFieldAsync(tasksList, "Description", "Note");
+            await EnsureChoiceFieldAsync(tasksList, "Status", new[] { "Pending", "In Progress", "Done", "Cancelled" });
+            await EnsureFieldAsync(tasksList, "DueDate", "DateTime");
+        }
     }
 
     public async Task<string> TestConnectionAsync()
     {
-        using var context = await _contextFactory.CreateContextAsync();
-        context.Load(context.Web, w => w.Title);
-        await context.ExecuteQueryRetryAsync();
-        return context.Web.Title;
+        var hotelSiteUrl = _config["SharePoint:SiteUrl"];
+        var labSiteUrl = _config["SharePoint:SiteLabUrl"];
+
+        using var contextHotel = await _contextFactory.CreateContextAsync(hotelSiteUrl);
+        contextHotel.Load(contextHotel.Web, w => w.Title);
+        await contextHotel.ExecuteQueryRetryAsync();
+        var hotelTitle = contextHotel.Web.Title;
+
+        using var contextLab = await _contextFactory.CreateContextAsync(labSiteUrl);
+        contextLab.Load(contextLab.Web, w => w.Title);
+        await contextLab.ExecuteQueryRetryAsync();
+        var labTitle = contextLab.Web.Title;
+
+        return $"Hotel: {hotelTitle} | Lab: {labTitle}";
     }
 
     private async Task<List> EnsureListAsync(ClientContext context, string title, ListTemplateType template)
