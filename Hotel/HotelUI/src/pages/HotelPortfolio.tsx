@@ -60,7 +60,7 @@ export const HotelPortfolio: React.FC = () => {
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: '100px' }}>
-        <Spinner label="Carregando portfólio de luxo..." />
+        <Spinner label="Loading luxury portfolio..." />
       </div>
     );
   }
@@ -68,9 +68,9 @@ export const HotelPortfolio: React.FC = () => {
   return (
     <div className={styles.root}>
       <div className={styles.header}>
-        <Title1>Nossos Hotéis</Title1>
+        <Title1>Our Hotels</Title1>
         <Subtitle2 style={{ color: tokens.colorNeutralForeground4 }}>
-          Explore e gerencie as propriedades exclusivas do grupo Hospitality Excellence.
+          Explore and manage the exclusive properties of the Hospitality Excellence group.
         </Subtitle2>
       </div>
 
@@ -83,7 +83,7 @@ export const HotelPortfolio: React.FC = () => {
             stars={hotel.stars}
             description={hotel.description}
             imageUrl={hotel.imageUrl}
-            onViewRooms={() => console.log(`Ver quartos do hotel ${hotel.id}`)}
+            onViewRooms={() => console.log(`View rooms for hotel ${hotel.id}`)}
           />
         ))}
       </div>

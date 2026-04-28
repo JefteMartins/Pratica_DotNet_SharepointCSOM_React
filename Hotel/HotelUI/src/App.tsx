@@ -10,7 +10,7 @@ import {
   Home24Regular, 
   Building24Regular, 
   CalendarMonth24Regular, 
-  Settings24Regular 
+  Flash24Regular
 } from '@fluentui/react-icons';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { hotelTheme } from './theme';
@@ -18,6 +18,7 @@ import { HotelPortfolio } from './pages/HotelPortfolio';
 import { Dashboard } from './pages/Dashboard';
 import { RoomManagement } from './pages/RoomManagement';
 import { Bookings } from './pages/Bookings';
+import { LabDashboard } from './pages/LabDashboard';
 import './App.css';
 
 const useStyles = makeStyles({
@@ -29,6 +30,8 @@ const useStyles = makeStyles({
   },
   sidebar: {
     width: '280px',
+    minWidth: '280px',
+    flexShrink: 0,
     backgroundColor: '#001E42', // Navy Primário
     color: '#ffffff',
     display: 'flex',
@@ -69,6 +72,8 @@ const useStyles = makeStyles({
   },
   content: {
     flexGrow: 1,
+    minWidth: 0,
+    overflowX: 'auto',
     overflowY: 'auto',
     ...shorthands.padding('32px', '40px'),
   },
@@ -77,7 +82,7 @@ const useStyles = makeStyles({
 const NavItem = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => {
   const styles = useStyles();
   const location = useLocation();
-  const isActive = location.pathname === to;
+  const isActive = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
 
   return (
     <Link to={to} className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}>
@@ -97,10 +102,10 @@ const Sidebar = () => {
       </div>
       <nav className={styles.nav}>
         <NavItem to="/" icon={Home24Regular} label="Dashboard" />
-        <NavItem to="/hotels" icon={Building24Regular} label="Hotéis" />
-        <NavItem to="/rooms" icon={Building24Regular} label="Quartos" />
-        <NavItem to="/bookings" icon={CalendarMonth24Regular} label="Reservas" />
-        <NavItem to="/settings" icon={Settings24Regular} label="Configurações" />
+        <NavItem to="/hotels" icon={Building24Regular} label="Hotels" />
+        <NavItem to="/rooms" icon={Building24Regular} label="Rooms" />
+        <NavItem to="/bookings" icon={CalendarMonth24Regular} label="Bookings" />
+        <NavItem to="/lab" icon={Flash24Regular} label="Technical Lab" />
       </nav>
     </aside>
   );
@@ -120,7 +125,8 @@ function App() {
               <Route path="/hotels" element={<HotelPortfolio />} />
               <Route path="/rooms" element={<RoomManagement />} />
               <Route path="/bookings" element={<Bookings />} />
-              <Route path="/settings" element={<div style={{ padding: '20px' }}><Title2>Configurações</Title2><Caption1>Em breve...</Caption1></div>} />
+              <Route path="/lab/*" element={<LabDashboard />} />
+              <Route path="/settings" element={<div style={{ padding: '20px' }}><Title2>Settings</Title2><Caption1>Coming soon...</Caption1></div>} />
             </Routes>
           </main>
         </div>

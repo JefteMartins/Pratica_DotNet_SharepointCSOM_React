@@ -39,6 +39,8 @@ const useStyles = makeStyles({
 interface Booking {
   id: number;
   bookingCode: string;
+  hotelName: string;
+  roomName: string;
   guestName: string;
   checkIn: string;
   checkOut: string;
@@ -67,50 +69,54 @@ export const Bookings: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Confirmed': return 'success';
+      case 'Confirmed': return 'informative';
       case 'CheckedIn': return 'brand';
       case 'Cancelled': return 'danger';
-      case 'CheckedOut': return 'informative';
-      default: return 'neutral';
+      case 'CheckedOut': return 'success';
+      default: return 'subtle';
     }
   };
 
   return (
     <div className={styles.root}>
       <div>
-        <Title1>Livro de Reservas</Title1>
+        <Title1>Booking Ledger</Title1>
         <Subtitle2 block style={{ color: tokens.colorNeutralForeground4 }}>
-          Histórico completo e agendamentos futuros.
+          Complete history and future schedules.
         </Subtitle2>
       </div>
 
       <div className={styles.tableContainer}>
-        {loading ? <Spinner label="Carregando reservas..." style={{ padding: '40px' }} /> : (
+        {loading ? <Spinner label="Loading bookings..." style={{ padding: '40px' }} /> : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHeaderCell className={styles.headerCell}>Código</TableHeaderCell>
-                <TableHeaderCell className={styles.headerCell}>Hóspede</TableHeaderCell>
+                <TableHeaderCell className={styles.headerCell}>Code</TableHeaderCell>
+                <TableHeaderCell className={styles.headerCell}>Hotel</TableHeaderCell>
+                <TableHeaderCell className={styles.headerCell}>Room</TableHeaderCell>
+                <TableHeaderCell className={styles.headerCell}>Guest</TableHeaderCell>
                 <TableHeaderCell className={styles.headerCell}>Check-In</TableHeaderCell>
                 <TableHeaderCell className={styles.headerCell}>Check-Out</TableHeaderCell>
-                <TableHeaderCell className={styles.headerCell}>Valor</TableHeaderCell>
+                <TableHeaderCell className={styles.headerCell}>Amount</TableHeaderCell>
                 <TableHeaderCell className={styles.headerCell}>Status</TableHeaderCell>
               </TableRow>
             </TableHeader>
             <TableBody>
               {bookings.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} style={{ textAlign: 'center', padding: '20px' }}>
-                    Nenhuma reserva encontrada.
+                  <TableCell colSpan={8} style={{ textAlign: 'center', padding: '20px' }}>
+                    No bookings found.
                   </TableCell>
                 </TableRow>
               ) : bookings.map((booking) => (
                 <TableRow key={booking.id}>
                   <TableCell><Text weight="semibold">{booking.bookingCode}</Text></TableCell>
+                  <TableCell>{booking.hotelName}</TableCell>
+                  <TableCell>{booking.roomName}</TableCell>
                   <TableCell>{booking.guestName}</TableCell>
                   <TableCell>{new Date(booking.checkIn).toLocaleDateString()}</TableCell>
                   <TableCell>{new Date(booking.checkOut).toLocaleDateString()}</TableCell>
-                  <TableCell>R$ {booking.totalAmount.toLocaleString()}</TableCell>
+                  <TableCell>$ {booking.totalAmount.toLocaleString()}</TableCell>
                   <TableCell>
                     <Badge appearance="filled" color={getStatusColor(booking.status)}>
                       {booking.status}

@@ -71,7 +71,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, initia
 
   const handleSave = async () => {
     if (!guestName || !checkIn || !checkOut) {
-      alert("Por favor, preencha todos os campos.");
+      alert("Please fill in all fields.");
       return;
     }
 
@@ -96,7 +96,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, initia
       onClose(true);
     } catch (error: any) {
       console.error("Erro ao criar reserva:", error);
-      const message = error.response?.data?.message || "Falha ao salvar reserva no SharePoint.";
+      const message = error.response?.data?.message || "Failed to save booking in SharePoint.";
       alert(message);
     } finally {
       setIsSaving(false);
@@ -107,11 +107,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, initia
     <Dialog open={isOpen} onOpenChange={() => !isSaving && onClose(false)}>
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>Confirmar Reserva - {room.title}</DialogTitle>
+          <DialogTitle>Confirm Booking - {room.title}</DialogTitle>
           <DialogContent>
             <div className={styles.field}>
-              <Label required>Nome do Hóspede</Label>
-              <Input value={guestName} onChange={(_, d) => setGuestName(d.value)} placeholder="Nome completo" />
+              <Label required>Guest Name</Label>
+              <Input value={guestName} onChange={(_, d) => setGuestName(d.value)} placeholder="Full name" />
             </div>
 
             <div style={{ display: 'flex', gap: '16px' }}>
@@ -126,19 +126,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({ room, isOpen, initia
             </div>
 
             <div className={styles.summary}>
-              <Text size={200} block>Total da Estadia:</Text>
-              <Text weight="bold" size={500}>R$ {calculateTotal().toLocaleString()}</Text>
+              <Text size={200} block>Total for the stay:</Text>
+              <Text weight="bold" size={500}>$ {calculateTotal().toLocaleString()}</Text>
               <Text size={100} block color={tokens.colorNeutralForeground4}>
-                {Math.ceil(Math.abs(new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 3600 * 24))} noites confirmadas.
+                {Math.ceil(Math.abs(new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 3600 * 24))} nights confirmed.
               </Text>
             </div>
           </DialogContent>
           <DialogActions>
             <Button appearance="secondary" onClick={() => onClose(false)} disabled={isSaving}>
-              Voltar
+              Back
             </Button>
             <Button appearance="primary" onClick={handleSave} disabled={isSaving}>
-              {isSaving ? <Spinner size="tiny" label="Sincronizando..." /> : "Finalizar Reserva"}
+              {isSaving ? <Spinner size="tiny" label="Syncing..." /> : "Complete Booking"}
             </Button>
           </DialogActions>
         </DialogBody>
